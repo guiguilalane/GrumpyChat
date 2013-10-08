@@ -1,4 +1,4 @@
-package server.package2;
+package server.main;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -6,7 +6,7 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
-import server.package3.ServerForum;
+import server.objects.ServerForum;
 
 public class ServerForumLauncher {
 

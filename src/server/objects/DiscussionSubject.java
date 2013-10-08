@@ -1,5 +1,7 @@
-package server.package3;
+package server.objects;
 import java.rmi.RemoteException;
+
+import server.objects.interfaces.DiscussionSubjectInterface;
 
 import client.interfaces.ClientDisplayerInterface;
 

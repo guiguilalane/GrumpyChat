@@ -1,6 +1,9 @@
-package server.package3;
+package server.objects.interfaces;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+
+import server.objects.interfaces.DiscussionSubjectInterface;
 
 /**
  * @author Niiner
@@ -8,7 +11,7 @@ import java.rmi.RemoteException;
  * Unique object located on server site, 
  * known by an extern name : "//machine:port/leServeur" 
  */
-public interface ServerForumInterface extends Remote{
+public interface ServerForumInterface extends Remote {
 
 	/**
 	 * Returns the DiscussionSubject identified by a string title, null otherwise

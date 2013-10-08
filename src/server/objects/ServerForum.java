@@ -1,7 +1,10 @@
-package server.package3;
+package server.objects;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
+
+import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.ServerForumInterface;
 
 
 public class ServerForum extends UnicastRemoteObject implements ServerForumInterface {
