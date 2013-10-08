@@ -22,7 +22,7 @@ public class ServerForumLauncher {
 			ServerForum forumServer = new ServerForum();
 			System.out.println("[ Trying registry with port 1099 ]");
 
-			LocateRegistry.createRegistry(1100);
+			LocateRegistry.createRegistry(1099);
 
 			ServerForum serverForum = new ServerForum();
 			String url = "rmi://" + InetAddress.getLocalHost().getHostName() + "/GrumpyChat";
@@ -35,6 +35,5 @@ public class ServerForumLauncher {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} 
-
 	}
 }
