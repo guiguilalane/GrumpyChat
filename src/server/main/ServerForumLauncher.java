@@ -19,13 +19,17 @@ public class ServerForumLauncher {
 	 */
 	public static void main(String[] args) throws java.net.UnknownHostException {
 		try {
-			ServerForum forumServer = new ServerForum();
-			System.out.println("[ Trying registry with port 1099 ]");
+			int port=1090;
+			System.out.println("[ Trying registry with port "+port+" ]");
 
-			LocateRegistry.createRegistry(1099);
+			LocateRegistry.createRegistry(port);
 
 			ServerForum serverForum = new ServerForum();
-			String url = "rmi://" + InetAddress.getLocalHost().getHostName() + "/GrumpyChat";
+			serverForum.initializedDiscutions();
+			/*
+			 * On a dit pas rmi: !!
+			 */
+			String url = "//" + InetAddress.getLocalHost().getHostName() + ":" +port +"/GrumpyChat";
 			System.out.println("[ Registry of object with URL  ] : " + url);
 			Naming.rebind(url, serverForum);
 

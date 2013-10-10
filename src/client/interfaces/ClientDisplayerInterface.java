@@ -6,14 +6,16 @@ import java.rmi.RemoteException;
 /**
  * @author Niiner
  * Interface d'objet distant pour les afficheurs clients d'un sujet de discussion
- * objets localisés sur les sites clients du forum, captés sur le site serveur par références
- * passées en paramètre depuis les sites clients
+ * objets localisï¿½s sur les sites clients du forum, captï¿½s sur le site serveur par rï¿½fï¿½rences
+ * passï¿½es en paramï¿½tre depuis les sites clients
  */
-public interface ClientDisplayerInterface extends Remote{
+public interface ClientDisplayerInterface extends Remote {
 
 	/**
 	 * Display the message on the client's displayer
 	 * @param message
 	 */
 	public void display(String message) throws RemoteException;
+
+	void start() throws RemoteException;
 }
