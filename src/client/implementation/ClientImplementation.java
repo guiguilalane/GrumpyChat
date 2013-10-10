@@ -32,18 +32,25 @@ public class ClientImplementation implements ClientInterface, Serializable {
 	
 	@Override
 	public boolean equals(Object obj) {
+		System.err.println("Debug 1");
 		if (this == obj)
 			return true;
+		System.err.println("Debug 2");
 		if (obj == null)
 			return false;
+		System.err.println("Debug 3");
 		if (getClass() != obj.getClass())
 			return false;
+		System.err.println("Debug 4");
 		ClientImplementation other = (ClientImplementation) obj;
 		if (pseudo == null) {
+			System.err.println("Debug 5");
 			if (other.pseudo != null)
 				return false;
+			System.err.println("Debug 6");
 		} else if (!pseudo.equals(other.pseudo))
 			return false;
+		System.err.println("Debug 7");
 		return true;
 	}
 
