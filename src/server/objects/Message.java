@@ -8,18 +8,36 @@ import java.util.Date;
 import server.objects.interfaces.MessageInterface;
 import client.interfaces.ClientInterface;
 
+/**
+ * The message, identified by the #{@link ClientInterface client} and
+ * his {@link String message}. 
+ * @author Grumpy Group
+ */
 public class Message implements MessageInterface, Serializable {
 
 	/**
 	 * ID
 	 */
 	private static final long serialVersionUID = -217825946119048920L;
+	/**
+	 * The client message's author
+	 */
 	private ClientInterface client;
+	/**
+	 * The message
+	 */
 	private String message;
+	/**
+	 * The message creation date
+	 */
 	private Date date;
+	/**
+	 * Date format as <code>HH:mm:ss</code>
+	 */
 	protected static SimpleDateFormat dateFormat=new SimpleDateFormat("HH:mm:ss");
 	
 	/**
+	 * Constructor
 	 * @param client {@link ClientInterface} - The client
 	 * @param message {@link String} - The message
 	 */

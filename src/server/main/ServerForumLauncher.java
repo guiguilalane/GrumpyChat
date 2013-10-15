@@ -10,11 +10,14 @@ import java.rmi.server.ExportException;
 
 import server.objects.ServerForum;
 
+/**
+ * The server launcher
+ * @author Grumpy Group
+ */
 public class ServerForumLauncher {
 
 	/**
 	 * Allow to launch the server
-	 * TODO : 
 	 * @param args
 	 * @throws java.net.UnknownHostException 
 	 * @throws RemoteException 

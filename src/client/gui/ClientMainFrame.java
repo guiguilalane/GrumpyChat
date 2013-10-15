@@ -26,16 +26,36 @@ import javax.swing.text.StyledDocument;
 
 import client.implementation.ClientDisplayer;
 
+/**
+ * This class is the main frame of the client side
+ * @author Grumpy Group
+ */
 public class ClientMainFrame extends JFrame {
 
 	/**
-	 * 
+	 * ID
 	 */
 	private static final long serialVersionUID = -8604291092461331957L;
+	/**
+	 * The frame width
+	 */
 	private int frameWidth=400;
+	/**
+	 * The frame height
+	 */
 	private int frameHeight=300;
+	/**
+	 * The client displayer instance, it defines the clients attributes
+	 * in client side
+	 */
 	private ClientDisplayer cd;
+	/**
+	 * The globale log console
+	 */
 	private JTextPane console=new JTextPane();
+	/**
+	 * For the globale log console styles
+	 */
 	private StyledDocument style=this.console.getStyledDocument();
     private Style errorStyle = this.console.addStyle("ErrorStyle", null);
     private Style normalStyle = this.console.addStyle("NormalStyle", null);
@@ -72,11 +92,16 @@ public class ClientMainFrame extends JFrame {
 		this.setMinimumSize(new Dimension(minWidth,minHeight));
 		this.setTitle("Client");
 		this.setLocationRelativeTo(null);
+		
+		/*
+		 * To define the close operation
+		 */
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		final ClientMainFrame cmf = this;
 		this.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {
-					int leave=JOptionPane.showConfirmDialog(cmf, "Do you want to leave?", "Quit? :(",
+					int leave=JOptionPane.showConfirmDialog(cmf,
+							"Do you want to leave?", "Quit? :(",
 							JOptionPane.YES_NO_OPTION);
 					if(leave==0) {
 						try {
@@ -116,11 +141,19 @@ public class ClientMainFrame extends JFrame {
 		this.setVisible(true);
 	}
 
+	/**
+	 * Constructor with the client displayer
+	 * @param clientDisplayer {@link ClientDisplayer} - The client displayer
+	 */
 	public ClientMainFrame(ClientDisplayer clientDisplayer) {
 		this();
 		this.cd=clientDisplayer;
 	}
 
+	/**
+	 * Display the server log in the client side
+	 * @param message {@link String} - The message to display
+	 */
 	public void displayLog(String message) {
 		try {
 			this.style.insertString(this.style.getLength(), message+"\n", this.normalStyle);
@@ -130,6 +163,10 @@ public class ClientMainFrame extends JFrame {
 		this.console.setCaretPosition(this.style.getLength());
 	}
 
+	/**
+	 * Display trhe server error log in the client side
+	 * @param message {@link String} - The error to display
+	 */
 	public void displayError(String message) {
 		try {
 			this.style.insertString(this.style.getLength(), message+"\n", this.errorStyle);

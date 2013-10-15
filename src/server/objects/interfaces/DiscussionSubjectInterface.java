@@ -6,7 +6,7 @@ import java.util.List;
 import client.interfaces.ClientInterface;
 
 /**
- * @author Niiner
+ * @author Grumpy Group
  * A remote object interface for all discussion subject (sport, cinema, music, ...)
  */
 public interface DiscussionSubjectInterface extends Remote {
@@ -42,7 +42,7 @@ public interface DiscussionSubjectInterface extends Remote {
 	
 	/**
 	 * Subscribe a {@link ClientInterface Client} to a discussion subject
-	 * @param {{@link ClientInterface} - The client to register in this discussion
+	 * @param client {@link ClientInterface} - The client to register in this discussion
 	 * @throws RemoteException
 	 */
 	public boolean subscribe(ClientInterface client)
@@ -50,7 +50,7 @@ public interface DiscussionSubjectInterface extends Remote {
 	
 	/**
 	 * Unsubscribe a {@link ClientInterface Client} to a discussion subject
-	 * @param {{@link ClientInterface} - The client to unregister in this discussion
+	 * @param client {@link ClientInterface} - The client to unregister in this discussion
 	 * @throws RemoteException
 	 */
 	public boolean unsubscribe(ClientInterface client)
@@ -78,7 +78,7 @@ public interface DiscussionSubjectInterface extends Remote {
 	public List<MessageInterface> getMessages() throws RemoteException;
 
 	/**
-	 * Add a message in discussion mesages list
+	 * Add a message in discussion messages list
 	 * @param message {@link MessageInterface} - The message to add
 	 * @return {@link Boolean boolean} - True if the message has been correctly added
 	 * @throws RemoteException

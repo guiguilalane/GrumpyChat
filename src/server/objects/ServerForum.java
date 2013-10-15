@@ -13,26 +13,61 @@ import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
 
-
+/**
+ * The server instance
+ * @author Grumpy Group
+ */
 public class ServerForum extends UnicastRemoteObject implements ServerForumInterface {
 
 	/**
 	 * ID
 	 */
 	private static final long serialVersionUID = -4777930444757298232L;
+	/**
+	 * The map of the {@link DiscussionSubjectInterface discussion subjects} and
+	 * their {@link ClientDisplayerInterface authors}
+	 */
 	private Map<DiscussionSubjectInterface,ClientDisplayerInterface> discussionSubjects=
 			new HashMap<DiscussionSubjectInterface,ClientDisplayerInterface>();
+	/**
+	 * The list of all connected {@link ClientDisplayerInterface users} on the forum
+	 */
 	private List<ClientDisplayerInterface> clients=
 			new ArrayList<ClientDisplayerInterface>();
+	/**
+	 * The server client instance, used to send message for example
+	 */
 	private ClientInterface client = new ClientImplementation("SERVER");
+	/**
+	 * Set the maximum of {@link DiscussionSubjectInterface channels} that a user
+	 * can create
+	 */
 	private static final int CLIENT_MAX_CHANNEL=3;
 	
 	/**
-	 * Protected Constructor
+	 * Default Constructor
 	 * @throws RemoteException
 	 */
 	public ServerForum() throws RemoteException {
 		super();
+	}
+
+	/**
+	 * Creates a default discussion subject in the forum list
+	 */
+	public void initializedDiscutions()
+	{
+		try {
+			this.discussionSubjects.put(new DiscussionSubject("Default channel"),
+					null);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public String display() {
+		return this.toString();
 	}
 	
 	@Override
@@ -144,16 +179,6 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 		}
 		return null;
 	}
-
-	public void initializedDiscutions()
-	{
-		try {
-			this.discussionSubjects.put(new DiscussionSubject("Default channel"),
-					null);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	@Override
 	public synchronized boolean newUser(ClientDisplayerInterface client)
@@ -177,10 +202,6 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 			}
 		}
 		return true;
-	}
-	
-	public String display() {
-		return this.toString();
 	}
 
 	@Override
