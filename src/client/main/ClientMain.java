@@ -1,6 +1,5 @@
 package client.main;
 
-import java.awt.BorderLayout;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -19,6 +18,7 @@ import server.objects.Message;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
+import client.gui.ClientDiscussionFrame;
 import client.gui.DiscussionSubjectMenu;
 import client.implementation.ClientDisplayer;
 import client.implementation.ClientImplementation;
@@ -151,6 +151,7 @@ public class ClientMain {
 						cd.setCurrentDiscussion(dsi);
 						cd.display("The channel '"+subject+"' has been correctly " +
 								"created", true);
+						new ClientDiscussionFrame(cd, dsi);
 					}
 					else {
 						cd.error("The channel '"+subject+"' can not be created",
