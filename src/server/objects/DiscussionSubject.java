@@ -9,8 +9,12 @@ import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
 import client.interfaces.ClientInterface;
 
-
-public class DiscussionSubject extends UnicastRemoteObject implements DiscussionSubjectInterface {
+/**
+ * The discussion subjects on the forum
+ * @author Grumpy Group
+ */
+public class DiscussionSubject extends UnicastRemoteObject
+	implements DiscussionSubjectInterface {
 	
 	/**
 	 * ID

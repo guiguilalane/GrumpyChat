@@ -5,14 +5,25 @@ import java.rmi.RemoteException;
 
 import client.interfaces.ClientInterface;
 
+/**
+ * The client instance implementation, the client that is used for the user
+ * @author Grumpy Chat
+ */
 public class ClientImplementation implements ClientInterface, Serializable {
 
 	/**
 	 * ID
 	 */
 	private static final long serialVersionUID = 1636115086769359904L;
+	/**
+	 * His identificator name
+	 */
 	private String pseudo="Unamed";
 	
+	/**
+	 * Constructor using his pseudo 
+	 * @param pseudo {@link String} - The client pseudo
+	 */
 	public ClientImplementation(String pseudo) {
 		this.pseudo=pseudo;
 	}

@@ -22,11 +22,23 @@ import client.implementation.ClientDisplayer;
 import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
 
+/**
+ * This is the client launcher
+ * @author Grumpy Group
+ */
 public class ClientMain {
 
+	/**
+	 * Connection tries
+	 */
 	private int tries=0;
 	
-	@SuppressWarnings("resource")
+	/**
+	 * The client starting method
+	 * @param cd {@link ClientDisplayer} - The client displayer
+	 * @throws RemoteException
+	 */
+//	@SuppressWarnings("resource")
 	public void start(ClientDisplayerInterface cd) throws RemoteException {
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -289,6 +301,10 @@ public class ClientMain {
 		}
 	}
 	
+	/**
+	 * Main class
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		try {
 			new ClientMain().start(new ClientDisplayer());

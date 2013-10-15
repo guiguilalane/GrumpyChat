@@ -9,8 +9,12 @@ import javax.swing.JOptionPane;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import client.gui.ClientMainFrame;
 import client.interfaces.ClientDisplayerInterface;
+import client.interfaces.ClientInterface;
 
-
+/**
+ * This class is the displayer that defines the clients attributes
+ * @author Grumpy Group
+ */
 
 public class ClientDisplayer extends UnicastRemoteObject
 		implements ClientDisplayerInterface, Serializable {
@@ -19,11 +23,17 @@ public class ClientDisplayer extends UnicastRemoteObject
 	 * ID
 	 */
 	private static final long serialVersionUID = -586751614177645291L;
+	/**
+	 * The {@link ClientInterface client} used 
+	 */
 	private ClientImplementation client;
 	private DiscussionSubjectInterface currentDiscussion=null;
 	private ClientMainFrame mainFrame;
 
-	
+	/**
+	 * Instance constructor
+	 * @throws RemoteException
+	 */
 	public ClientDisplayer() throws RemoteException {
 		super();
 		this.mainFrame=new ClientMainFrame(this);
