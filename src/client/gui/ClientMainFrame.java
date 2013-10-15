@@ -56,10 +56,14 @@ public class ClientMainFrame extends JFrame {
 	    StyleConstants.setForeground(this.errorStyle, Color.red);
 	    StyleConstants.setForeground(this.normalStyle, this.console.getForeground());
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		
+		// Set a minimum size to the app
 		int width = gd.getDisplayMode().getWidth();
 		int height = gd.getDisplayMode().getHeight();
-		int minWidth=700;
-		int minHeight=280;
+		int minWidth = 700;
+		int minHeight = 280;
+		
+		// Center the app
 		if(width/2>=minWidth)
 		{
 			this.frameWidth=width/2;
@@ -68,12 +72,14 @@ public class ClientMainFrame extends JFrame {
 		{
 			this.frameHeight=height/2;
 		}
+		
 		this.setSize(this.frameWidth, this.frameHeight);
 		this.setMinimumSize(new Dimension(minWidth,minHeight));
 		this.setTitle("Client");
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		final ClientMainFrame cmf = this;
+		
 		this.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {
 					int leave=JOptionPane.showConfirmDialog(cmf, "Do you want to leave?", "Quit? :(",
@@ -93,7 +99,7 @@ public class ClientMainFrame extends JFrame {
 		
 		JPanel bottomPanel=new JPanel();
 		bottomPanel.setLayout(new GridLayout(1, 2));
-		this.console.setEditable(false);
+		this.console.setEditable(true);
 		this.console.setLayout(new FlowLayout());
 		JScrollPane consoleScroll=new JScrollPane(this.console);
 		consoleScroll.setMaximumSize(new Dimension(380,100));
