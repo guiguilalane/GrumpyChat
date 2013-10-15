@@ -20,7 +20,7 @@ public interface ServerForumInterface extends Remote {
 	 * if does not exist
 	 * @throws RemoteException
 	 */
-	public DiscussionSubjectInterface obtientSujet(String title) 
+	public DiscussionSubjectInterface getSubjectFromName(String title) 
 			throws RemoteException;
 	
 	/**

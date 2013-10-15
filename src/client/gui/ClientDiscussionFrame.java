@@ -27,9 +27,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import client.interfaces.ClientDisplayerInterface;
-
 import server.objects.interfaces.DiscussionSubjectInterface;
+import client.interfaces.ClientDisplayerInterface;
 
 public class ClientDiscussionFrame extends JFrame implements ActionListener {
 
@@ -46,6 +45,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 	private JScrollPane logScroll;
 	private JScrollPane messageScroll;
 	private JTextArea messageContent=new JTextArea();
+	private JButton removeButton=new JButton("Remove channel");
 	private JButton sendButton=new JButton("Send");
 	private JButton resetButton=new JButton("Reset");
 	private JButton copyButton=new JButton("Copy");
@@ -60,6 +60,10 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 			throws HeadlessException {
 		
 		super("Discussion: ");
+
+		final int frameWidth=600;
+		final int frameHeight=500;
+		
 		JLabel label;
 		String title="error";
 		Integer users=0;
@@ -78,9 +82,9 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 	    StyleConstants.setForeground(this.errorStyle, Color.red);
 	    StyleConstants.setForeground(this.infoStyle, Color.decode("#808080"));
 	    StyleConstants.setForeground(this.normalStyle, this.log.getForeground());
-		this.setSize(400,500);
-		this.setPreferredSize(new Dimension(400,500));
-		this.setMinimumSize(new Dimension(400,500));
+		this.setSize(frameWidth,frameHeight);
+		this.setPreferredSize(new Dimension(frameWidth,frameHeight));
+		this.setMinimumSize(new Dimension(frameWidth,frameHeight));
 		this.setResizable(false);
 		this.setLayout(new FlowLayout());
 		this.setLocationRelativeTo(null);
@@ -96,24 +100,26 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 				}
 			});
 
-		label.setPreferredSize(new Dimension(360,15));
-		label.setMaximumSize(new Dimension(360,15));
+		label.setPreferredSize(new Dimension(frameWidth-40,15));
+		label.setMaximumSize(new Dimension(frameWidth-40,15));
 
 		this.log.setEditable(false);
 		this.log.setAutoscrolls(true);
 		this.log.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		this.logScroll = new JScrollPane(this.log);
 		this.logScroll.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		this.logScroll.setPreferredSize(new Dimension(390,350));
+		this.logScroll.setPreferredSize(new Dimension(frameWidth-10,350));
 
 		JPanel buttonPanel=new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		buttonPanel.setPreferredSize(new Dimension(390,35));
+		buttonPanel.setPreferredSize(new Dimension(frameWidth-10,35));
+		buttonPanel.add(this.removeButton);
 		buttonPanel.add(this.sendButton);
 		buttonPanel.add(this.resetButton);
 		buttonPanel.add(this.copyButton);
 		buttonPanel.add(this.clearButton);
 		buttonPanel.add(this.quitButton);
+		this.removeButton.addActionListener(this);
 		this.sendButton.addActionListener(this);
 		this.resetButton.addActionListener(this);
 		this.clearButton.addActionListener(this);
@@ -122,12 +128,12 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		
 		JPanel bottomPanel=new JPanel();
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		bottomPanel.setPreferredSize(new Dimension(390,90));
+		bottomPanel.setPreferredSize(new Dimension(frameWidth-10,90));
 
 		this.messageContent.setAutoscrolls(true);
 		this.messageScroll = new JScrollPane(this.messageContent);
 		this.messageScroll.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		this.messageScroll.setPreferredSize(new Dimension(390,45));
+		this.messageScroll.setPreferredSize(new Dimension(frameWidth-10,45));
 		bottomPanel.add(this.messageScroll);
 		bottomPanel.add(buttonPanel);
 		
@@ -143,6 +149,14 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		return JOptionPane.showConfirmDialog(this,
 				"Do you want to leave?", "Quit? :(",
 				JOptionPane.YES_NO_OPTION)==0;
+	}
+	
+	protected boolean askRemove() throws HeadlessException, RemoteException {
+		return JOptionPane.showConfirmDialog(this,
+				"Do you want really remove the channel "+this.discussion.getTitle()+
+				"?", "Remove? :O",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE)==0;
 	}
 
 	public void close() {
@@ -176,6 +190,31 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		if(event.getSource().equals(this.quitButton)) {
 			if(this.askQuit()) {
 				this.close();
+			}
+		}
+		if(event.getSource().equals(this.removeButton)) {
+			try {
+				if(this.askRemove()) {
+					if(!this.client.getServer().isChannelOwner(client, this.discussion.getTitle())) {
+						client.error("You are not the channel owner", true);
+						return;
+					}
+					DiscussionSubjectInterface dsi=this.client.getServer().remove(client, this.discussion.getTitle());
+					if(dsi!=null) {
+						if(client.getCurrentDiscussion().equals(dsi)) {
+							client.addDiscussion(null);
+						}
+						client.display("The channel '"+this.discussion.getTitle()+"' has been correctly " +
+								"removed", true);
+					}
+					else {
+						client.error("The channel '"+this.discussion.getTitle()+"' can not be remove", true);
+					}
+				}
+			} catch (HeadlessException e) {
+				e.printStackTrace();
+			} catch (RemoteException e) {
+				e.printStackTrace();
 			}
 		}
 	}

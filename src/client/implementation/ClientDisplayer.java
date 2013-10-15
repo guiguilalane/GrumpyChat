@@ -7,6 +7,7 @@ import java.rmi.server.UnicastRemoteObject;
 import javax.swing.JOptionPane;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.ServerForumInterface;
 import client.gui.ClientMainFrame;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
@@ -29,6 +30,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	private ClientImplementation client;
 	private DiscussionSubjectInterface currentDiscussion = null;
 	private ClientMainFrame mainFrame;
+	private ServerForumInterface server;
 
 	/**
 	 * Instance constructor
@@ -46,9 +48,23 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 
 	@Override
-	public void setCurrentDiscussion(DiscussionSubjectInterface currentDiscussion)
+	public void setCurrentDiscussion(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		this.currentDiscussion = dsi;
+	}
+
+	@Override
+	public void addDiscussion(DiscussionSubjectInterface dsi)
 			 throws RemoteException {
-		this.currentDiscussion = currentDiscussion;
+		this.mainFrame.addDiscussion(dsi);
+		this.currentDiscussion = dsi;
+	}
+
+	@Override
+	public void removeDiscussion(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		this.mainFrame.removeDiscussion(dsi);
+		this.currentDiscussion = null;
 	}
 
 	@Override
@@ -59,6 +75,16 @@ public class ClientDisplayer extends UnicastRemoteObject
 	@Override
 	public void setClient(ClientImplementation client) throws RemoteException {
 		this.client = client;
+	}
+
+	@Override
+	public ServerForumInterface getServer() {
+		return this.server;
+	}
+	
+	@Override
+	public void setServer(ServerForumInterface server) {
+		this.server = server;
 	}
 
 	@Override

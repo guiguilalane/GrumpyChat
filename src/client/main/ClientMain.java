@@ -7,19 +7,14 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.JPanel;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import server.objects.Message;
 import server.objects.interfaces.DiscussionSubjectInterface;
-import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
-import client.gui.ClientDiscussionFrame;
-import client.gui.DiscussionSubjectMenu;
+import client.gui.GetStringDialog;
 import client.implementation.ClientDisplayer;
 import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
@@ -36,30 +31,19 @@ public class ClientMain {
 	private int tries=0;
 
 	/**
-	 * Discussion subjects
-	 */
-	private DiscussionSubjectMenu discussionSubjects;
-
-	/**
-	 * The panel
-	 */
-	private JPanel panel;
-
-	/**
 	 * The client starting method
 	 * @param cd {@link ClientDisplayer} - The client displayer
 	 * @throws RemoteException
 	 */
-	//	@SuppressWarnings("resource")
+	@SuppressWarnings("resource")
 	public void start(ClientDisplayerInterface cd) throws RemoteException {
-
-		this.launchUI(cd);
 
 		if(cd==null) {
 			System.err.println("Client displayer could not be instantiated");
 			System.exit(0);
 		}
 		cd.display("Client starting...", false);
+		
 		int port=1100;
 		String url = null;
 		/*
@@ -74,42 +58,39 @@ public class ClientMain {
 			 */
 			url="//"+InetAddress.getLocalHost().getHostName()+":"+port+"/GrumpyChat";
 			ServerForumInterface server = (ServerForumInterface) Naming.lookup(url);
-
-			// Find all subjects on server 
-			try{
-				List<DiscussionSubjectInterface> subjects = server.getDiscussions();
-				for(DiscussionSubjectInterface subject : subjects){
-					System.out.println("Find subject: " + subject.getTitle());
-				}
-				
-			}catch(Exception e){
-				e.printStackTrace();
-				System.err.println("Can't find subjects on the server ... ");
-			}
+			cd.setServer(server);
 
 			this.tries=0;
 
 			String command="";
-			Scanner sc=new Scanner(System.in);
 
-			cd.display("Type your pseudo and press [ENTER]:", false);
-			command=sc.nextLine();
+			command=new GetStringDialog(cd.getMainFrame(), "Please enter your pseudo",
+					"Type your pseudo and validate","Pseudo",true).getValue();
+			if(command==null) {
+				cd.exit();
+			}
 			while(server.containsPseudo(command)||command.equalsIgnoreCase("server")||
 					command.isEmpty()) {
 				if(command.length()<3) {
 					cd.error("Your pseudo must have minimum 3 characters", true);
-					command="";
 				}
 				else {
 					cd.error("Pseudo '"+command+"' already used, please try again", true);
 				}
-				cd.display("Type your pseudo and press [ENTER]:", false);
-				command=sc.nextLine();
+				command=new GetStringDialog(cd.getMainFrame(), "Please enter your pseudo",
+						"Type your pseudo and validate","Pseudo",true).getValue();
+				if(command==null) {
+					cd.exit();
+				}
 			}
 			cd.setClient(new ClientImplementation(command));
 			server.newUser(cd);
 			cd.display("Welcome "+command, true);
 			cd.getMainFrame().setTitle("Client: "+command);
+			/*
+			 * Define the subjects discussions list in the client frame 
+			 */
+			cd.getMainFrame().updateSubjectPanel(server.getDiscussions());
 
 			String help="Available commands:\n" +
 					"\t/help:\t\t\tDisplay commands\n" +
@@ -121,67 +102,68 @@ public class ClientMain {
 					"\t/subscribe <channel>:\tSuscribe to channel <channel>\n" +
 					"\t/switch <channel>:\tSwitch to channel <channel>";
 
-			cd.display(help, true);
+//			cd.display(help, true);
 
+			Scanner sc=new Scanner(System.in);
 			do {
 				command=sc.nextLine();
 				if(command.toLowerCase().startsWith("/help")) {
 					cd.display(help, true);
 				}
-				else if(command.toLowerCase().startsWith("/create")) {
-					if(server.isFullChannel(cd)) {
-						cd.error("You can not create more channel, delete one before", true);
-						continue;
-					}
-					int len="/create".length();
-					if(command.length()<="/create".length()+1) {
-						cd.error("Please specify a message", true);
-						continue;
-					}
-					String subject=command.substring(len+1,command.length());
-					if(subject.endsWith(" ")) {
-						subject=subject.substring(0,subject.lastIndexOf(" "));
-					}
-					if(server.obtientSujet(subject)!=null) {
-						cd.error("The channel '"+subject+"' already exists", true);
-						continue;
-					}
-					DiscussionSubjectInterface dsi = server.create(cd,subject);
-					if(dsi!=null) {
-						cd.setCurrentDiscussion(dsi);
-						cd.display("The channel '"+subject+"' has been correctly " +
-								"created", true);
-						new ClientDiscussionFrame(cd, dsi);
-					}
-					else {
-						cd.error("The channel '"+subject+"' can not be created",
-								true);
-					}
-				}
-				else if(command.toLowerCase().startsWith("/list")) {
-					if(server.getDiscussions().isEmpty()) {
-						cd.error("There is no discussion on the forum", true);
-					}
-					String list="Discussions list:\n";
-					for(DiscussionSubjectInterface dsi:server.getDiscussions()) {
-						list+="\t\t"+dsi.getTitle()+(dsi.isConnected(cd.getClient())?
-								" *":"")+"\n";
-					}
-					cd.display(list, false);
-				}
-				else if(command.toLowerCase().startsWith("/messages")) {
-					if(cd.getCurrentDiscussion()==null) {
-						cd.error("You don't have current discussion", true);
-					}
-					else {
-						List<MessageInterface> messages=cd.getCurrentDiscussion()
-								.getMessages();
-						for(MessageInterface msg:messages) {
-							cd.display(msg.getDateString()+msg.getClient().getPseudo()+
-									": "+msg.getMessage(), false);
-						}
-					}
-				}
+//				else if(command.toLowerCase().startsWith("/create")) {
+//					if(server.isFullChannel(cd)) {
+//						cd.error("You can not create more channel, delete one before", true);
+//						continue;
+//					}
+//					int len="/create".length();
+//					if(command.length()<="/create".length()+1) {
+//						cd.error("Please specify a message", true);
+//						continue;
+//					}
+//					String subject=command.substring(len+1,command.length());
+//					if(subject.endsWith(" ")) {
+//						subject=subject.substring(0,subject.lastIndexOf(" "));
+//					}
+//					if(server.getSubjectFromName(subject)!=null) {
+//						cd.error("The channel '"+subject+"' already exists", true);
+//						continue;
+//					}
+//					DiscussionSubjectInterface dsi = server.create(cd,subject);
+//					if(dsi!=null) {
+//						cd.setCurrentDiscussion(dsi);
+//						cd.display("The channel '"+subject+"' has been correctly " +
+//								"created", true);
+//					}
+//					else {
+//						cd.error("The channel '"+subject+"' can not be created",
+//								true);
+//					}
+//				}
+//				else if(command.toLowerCase().startsWith("/list")) {
+//					if(server.getDiscussions().isEmpty()) {
+//						cd.error("There is no discussion on the forum", true);
+//					}
+//					String list="Discussions list:\n";
+//					for(DiscussionSubjectInterface dsi:server.getDiscussions()) {
+//						list+="\t\t"+dsi.getTitle()+(dsi.isConnected(cd.getClient())?
+//								" *":"")+"\n";
+//					}
+//					cd.display(list, false);
+//					cd.getMainFrame().updateSubjectPanel(server.getDiscussions());
+//				}
+//				else if(command.toLowerCase().startsWith("/messages")) {
+//					if(cd.getCurrentDiscussion()==null) {
+//						cd.error("You don't have current discussion", true);
+//					}
+//					else {
+//						List<MessageInterface> messages=cd.getCurrentDiscussion()
+//								.getMessages();
+//						for(MessageInterface msg:messages) {
+//							cd.display(msg.getDateString()+msg.getClient().getPseudo()+
+//									": "+msg.getMessage(), false);
+//						}
+//					}
+//				}
 				else if(command.toLowerCase().startsWith("/remove")) {
 					int len="/remove".length();
 					if(command.length()<="/remove".length()+1) {
@@ -199,8 +181,9 @@ public class ClientMain {
 					DiscussionSubjectInterface dsi=server.remove(cd, subject);
 					if(dsi!=null) {
 						if(cd.getCurrentDiscussion().equals(dsi)) {
-							cd.setCurrentDiscussion(null);
+							cd.setCurrentDiscussion(dsi);
 						}
+						cd.removeDiscussion(dsi);
 						cd.display("The channel '"+subject+"' has been correctly " +
 								"removed", true);
 					}
@@ -238,12 +221,12 @@ public class ClientMain {
 						subject=subject.substring(0,subject.lastIndexOf(" "));
 					}
 					cd.display("Subscribe to: "+subject, false);
-					DiscussionSubjectInterface dsi=server.obtientSujet(subject);
+					DiscussionSubjectInterface dsi=server.getSubjectFromName(subject);
 					if(dsi!=null) {
 						if(server.subscribe(dsi,cd)) {
 							cd.display("You are now connected to '"+dsi.getTitle()+
 									"' channel", true);
-							cd.setCurrentDiscussion(dsi);
+							cd.addDiscussion(dsi);
 						}
 						else {
 							cd.error("You failed to connect to '"+dsi.getTitle()+
@@ -265,12 +248,12 @@ public class ClientMain {
 						subject=subject.substring(0,subject.lastIndexOf(" "));
 					}
 					cd.display("Switch to: "+subject, false);
-					DiscussionSubjectInterface dsi=server.obtientSujet(subject);
+					DiscussionSubjectInterface dsi=server.getSubjectFromName(subject);
 					if(dsi!=null) {
 						if(dsi.isConnected(cd.getClient())) {
 							cd.display("You switched to '"+dsi.getTitle()+
 									"' channel", false);
-							cd.setCurrentDiscussion(dsi);
+							cd.addDiscussion(dsi);
 						}
 						else {
 							cd.error("You did not subscribe to '"+dsi.getTitle()+
@@ -318,34 +301,22 @@ public class ClientMain {
 		}
 	}
 
-	private void launchUI(ClientDisplayerInterface cd) throws RemoteException {
-		//repaint
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
-
-		this.discussionSubjects = new DiscussionSubjectMenu();
-		cd.getMainFrame().addSubjectPanel(discussionSubjects);
-	}
-
 	/**
 	 * Main class
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
 			new ClientMain().start(new ClientDisplayer());
 		} catch (RemoteException e) {
 			System.err.println("Error while loading client");
 			e.printStackTrace();
+			System.exit(0);
 		}
 	}
 

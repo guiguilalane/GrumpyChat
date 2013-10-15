@@ -3,6 +3,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.ServerForumInterface;
 
 import client.gui.ClientMainFrame;
 import client.implementation.ClientImplementation;
@@ -23,17 +24,33 @@ public interface ClientDisplayerInterface extends Remote {
 	/**
 	 * Returns the current discussion
 	 * @return {@link DiscussionSubjectInterface} - The current discussion
+	 * @throws RemoteException
 	 */
 	public DiscussionSubjectInterface getCurrentDiscussion()
 			throws RemoteException;
-
 	/**
 	 * Define the current discussion
 	 * @param currentDiscussion {@link DiscussionSubjectInterface} - The current
 	 * discussion
 	 * @throws RemoteException
 	 */
-	void setCurrentDiscussion(DiscussionSubjectInterface currentDiscussion)
+	public void setCurrentDiscussion(DiscussionSubjectInterface dsi)
+			throws RemoteException;
+
+	/**
+	 * Add a discussion as button
+	 * @param currentDiscussion {@link DiscussionSubjectInterface} - The discussion
+	 * @throws RemoteException
+	 */
+	void addDiscussion(DiscussionSubjectInterface currentDiscussion)
+			throws RemoteException;
+
+	/**
+	 * Remove a discussion as button
+	 * @param currentDiscussion {@link DiscussionSubjectInterface} - The discussion
+	 * @throws RemoteException
+	 */
+	public void removeDiscussion(DiscussionSubjectInterface dsi)
 			throws RemoteException;
 
 	/**
@@ -54,6 +71,7 @@ public interface ClientDisplayerInterface extends Remote {
 	/**
 	 * Display the message on the client's displayer
 	 * @param message
+	 * @throws RemoteException
 	 */
 	public void display(String message, boolean inFrame) throws RemoteException;
 
@@ -84,5 +102,18 @@ public interface ClientDisplayerInterface extends Remote {
 	 */
 	public void exit() throws RemoteException;
 
+	/**
+	 * Define the server instance for the controller
+	 * @param server {@link ServerForumInterface} - The server instance
+	 * @throws RemoteException
+	 */
+	public void setServer(ServerForumInterface server) throws RemoteException;
+
+	/**
+	 * Returns the server instance of the controller
+	 * @return server {@link ServerForumInterface} - The server instance
+	 * @throws RemoteException
+	 */
+	public ServerForumInterface getServer() throws RemoteException;
 
 }

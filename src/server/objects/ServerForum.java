@@ -119,7 +119,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	@Override
 	public synchronized boolean isChannelOwner(ClientDisplayerInterface client,
 			String subject) throws RemoteException {
-		DiscussionSubjectInterface dsi=this.obtientSujet(subject);
+		DiscussionSubjectInterface dsi=this.getSubjectFromName(subject);
 		ClientDisplayerInterface cdi=this.discussionSubjects.get(dsi);
 		return cdi!=null&&cdi.equals(client);
 	}
@@ -127,19 +127,19 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	@Override
 	public synchronized DiscussionSubjectInterface remove(ClientDisplayerInterface client,
 			String subject) throws RemoteException {
-		if(this.obtientSujet(subject)==null||
+		if(this.getSubjectFromName(subject)==null||
 				!this.isChannelOwner(client, subject)) {
 			return null;
 		}
-		DiscussionSubjectInterface dsi=this.obtientSujet(subject);
-		this.discussionSubjects.remove(this.obtientSujet(subject));
+		DiscussionSubjectInterface dsi=this.getSubjectFromName(subject);
+		this.discussionSubjects.remove(this.getSubjectFromName(subject));
 		return dsi;
 	}
 
 	@Override
 	public synchronized DiscussionSubjectInterface create(ClientDisplayerInterface client,
 			String subject) throws RemoteException {
-		if(this.obtientSujet(subject)!=null||
+		if(this.getSubjectFromName(subject)!=null||
 				this.isFullChannel(client)) {
 			return null;
 		}
@@ -176,7 +176,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	}
 
 	@Override
-	public synchronized DiscussionSubjectInterface obtientSujet(String title)
+	public synchronized DiscussionSubjectInterface getSubjectFromName(String title)
 			throws RemoteException {
 		for(DiscussionSubjectInterface dsi:this.discussionSubjects.keySet()) {
 			if(dsi.getTitle().equalsIgnoreCase(title)) {
