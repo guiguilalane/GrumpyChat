@@ -27,7 +27,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	 * The {@link ClientInterface client} used 
 	 */
 	private ClientImplementation client;
-	private DiscussionSubjectInterface currentDiscussion=null;
+	private DiscussionSubjectInterface currentDiscussion = null;
 	private ClientMainFrame mainFrame;
 
 	/**

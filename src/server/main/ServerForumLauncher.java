@@ -23,14 +23,14 @@ public class ServerForumLauncher {
 	 * @throws RemoteException 
 	 */
 	public static void main(String[] args) throws java.net.UnknownHostException {
-		int port=1099;
+		int port=1100;
 		try {
 			System.out.println("[ Trying registry with port "+port+" ]");
 
 			LocateRegistry.createRegistry(port);
 
 			ServerForum serverForum = new ServerForum();
-			serverForum.initializedDiscutions();
+			serverForum.initializedDiscussions();
 			/*
 			 * On a dit pas rmi: !!
 			 */

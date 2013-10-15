@@ -55,10 +55,16 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	/**
 	 * Creates a default discussion subject in the forum list
 	 */
-	public void initializedDiscutions()
+	public void initializedDiscussions()
 	{
 		try {
-			this.discussionSubjects.put(new DiscussionSubject("Default channel"),
+			this.discussionSubjects.put(new DiscussionSubject("Chat"),
+					null);
+			this.discussionSubjects.put(new DiscussionSubject("Mangas"),
+					null);
+			this.discussionSubjects.put(new DiscussionSubject("LoL"),
+					null);
+			this.discussionSubjects.put(new DiscussionSubject("Seeking for feeder"),
 					null);
 		} catch (RemoteException e) {
 			e.printStackTrace();

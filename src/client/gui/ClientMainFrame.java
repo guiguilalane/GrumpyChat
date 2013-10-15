@@ -122,8 +122,10 @@ public class ClientMainFrame extends JFrame {
 		
 		this.setLayout(new BorderLayout());
 		
-		JPanel bottomPanel=new JPanel();
+		JPanel bottomPanel = new JPanel();
+		
 		bottomPanel.setLayout(new GridLayout(1, 2));
+		
 		this.console.setEditable(true);
 		this.console.setLayout(new FlowLayout());
 		JScrollPane consoleScroll=new JScrollPane(this.console);
@@ -182,5 +184,10 @@ public class ClientMainFrame extends JFrame {
 		this.console.setCaretPosition(this.style.getLength());		
 	}
 
+	public void addSubjectPanel(JPanel panel){
+		panel.setLayout(new FlowLayout());
+		this.getContentPane().add(panel, BorderLayout.NORTH);
+		this.repaint();		
+	}
 	
 }

@@ -1,5 +1,6 @@
 package client.main;
 
+import java.awt.BorderLayout;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -10,6 +11,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -17,7 +19,7 @@ import server.objects.Message;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
-
+import client.gui.DiscussionSubjectMenu;
 import client.implementation.ClientDisplayer;
 import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
@@ -32,53 +34,67 @@ public class ClientMain {
 	 * Connection tries
 	 */
 	private int tries=0;
-	
+
+	/**
+	 * Discussion subjects
+	 */
+	private DiscussionSubjectMenu discussionSubjects;
+
+	/**
+	 * The panel
+	 */
+	private JPanel panel;
+
 	/**
 	 * The client starting method
 	 * @param cd {@link ClientDisplayer} - The client displayer
 	 * @throws RemoteException
 	 */
-//	@SuppressWarnings("resource")
+	//	@SuppressWarnings("resource")
 	public void start(ClientDisplayerInterface cd) throws RemoteException {
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-		} catch (ClassNotFoundException e2) {
-			e2.printStackTrace();
-		} catch (InstantiationException e2) {
-			e2.printStackTrace();
-		} catch (IllegalAccessException e2) {
-			e2.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e2) {
-			e2.printStackTrace();
-		}
+
+		this.launchUI(cd);
+
 		if(cd==null) {
 			System.err.println("Client displayer could not be instantiated");
 			System.exit(0);
 		}
 		cd.display("Client starting...", false);
-		int port=1099;
+		int port=1100;
 		String url = null;
 		/*
 		 * Fait automatiquement
 		 */
-//			if (System.getSecurityManager() == null) {
-//				System.setSecurityManager(new RMISecurityManager());
-//			}
+		//			if (System.getSecurityManager() == null) {
+		//				System.setSecurityManager(new RMISecurityManager());
+		//			}
 		try {
 			/*
 			 * On n'utilise pas rmi:
 			 */
 			url="//"+InetAddress.getLocalHost().getHostName()+":"+port+"/GrumpyChat";
-			ServerForumInterface r = (ServerForumInterface) Naming.lookup(url);
-			
+			ServerForumInterface server = (ServerForumInterface) Naming.lookup(url);
+
+			// Find all subjects on server 
+			try{
+				List<DiscussionSubjectInterface> subjects = server.getDiscussions();
+				for(DiscussionSubjectInterface subject : subjects){
+					System.out.println("Find subject: " + subject.getTitle());
+				}
+				
+			}catch(Exception e){
+				e.printStackTrace();
+				System.err.println("Can't find subjects on the server ... ");
+			}
+
 			this.tries=0;
-			
+
 			String command="";
 			Scanner sc=new Scanner(System.in);
-			
+
 			cd.display("Type your pseudo and press [ENTER]:", false);
 			command=sc.nextLine();
-			while(r.containsPseudo(command)||command.equalsIgnoreCase("server")||
+			while(server.containsPseudo(command)||command.equalsIgnoreCase("server")||
 					command.isEmpty()) {
 				if(command.length()<3) {
 					cd.error("Your pseudo must have minimum 3 characters", true);
@@ -91,10 +107,10 @@ public class ClientMain {
 				command=sc.nextLine();
 			}
 			cd.setClient(new ClientImplementation(command));
-			r.newUser(cd);
+			server.newUser(cd);
 			cd.display("Welcome "+command, true);
 			cd.getMainFrame().setTitle("Client: "+command);
-			
+
 			String help="Available commands:\n" +
 					"\t/help:\t\t\tDisplay commands\n" +
 					"\t/create <channel>:\tCreate the channel <channel> on the server\n" +
@@ -104,16 +120,16 @@ public class ClientMain {
 					"\t/say <message>:\tAdd the message <message> from you on your current channel\n" +
 					"\t/subscribe <channel>:\tSuscribe to channel <channel>\n" +
 					"\t/switch <channel>:\tSwitch to channel <channel>";
-			
+
 			cd.display(help, true);
-			
+
 			do {
 				command=sc.nextLine();
 				if(command.toLowerCase().startsWith("/help")) {
 					cd.display(help, true);
 				}
 				else if(command.toLowerCase().startsWith("/create")) {
-					if(r.isFullChannel(cd)) {
+					if(server.isFullChannel(cd)) {
 						cd.error("You can not create more channel, delete one before", true);
 						continue;
 					}
@@ -126,11 +142,11 @@ public class ClientMain {
 					if(subject.endsWith(" ")) {
 						subject=subject.substring(0,subject.lastIndexOf(" "));
 					}
-					if(r.obtientSujet(subject)!=null) {
+					if(server.obtientSujet(subject)!=null) {
 						cd.error("The channel '"+subject+"' already exists", true);
 						continue;
 					}
-					DiscussionSubjectInterface dsi = r.create(cd,subject);
+					DiscussionSubjectInterface dsi = server.create(cd,subject);
 					if(dsi!=null) {
 						cd.setCurrentDiscussion(dsi);
 						cd.display("The channel '"+subject+"' has been correctly " +
@@ -142,11 +158,11 @@ public class ClientMain {
 					}
 				}
 				else if(command.toLowerCase().startsWith("/list")) {
-					if(r.getDiscussions().isEmpty()) {
+					if(server.getDiscussions().isEmpty()) {
 						cd.error("There is no discussion on the forum", true);
 					}
 					String list="Discussions list:\n";
-					for(DiscussionSubjectInterface dsi:r.getDiscussions()) {
+					for(DiscussionSubjectInterface dsi:server.getDiscussions()) {
 						list+="\t\t"+dsi.getTitle()+(dsi.isConnected(cd.getClient())?
 								" *":"")+"\n";
 					}
@@ -175,11 +191,11 @@ public class ClientMain {
 					if(subject.endsWith(" ")) {
 						subject=subject.substring(0,subject.lastIndexOf(" "));
 					}
-					if(!r.isChannelOwner(cd, subject)) {
+					if(!server.isChannelOwner(cd, subject)) {
 						cd.error("You are not the channel owner", true);
 						continue;
 					}
-					DiscussionSubjectInterface dsi=r.remove(cd, subject);
+					DiscussionSubjectInterface dsi=server.remove(cd, subject);
 					if(dsi!=null) {
 						if(cd.getCurrentDiscussion().equals(dsi)) {
 							cd.setCurrentDiscussion(null);
@@ -208,7 +224,7 @@ public class ClientMain {
 						cd.getCurrentDiscussion().addMessage(
 								new Message(cd.getClient(), message));
 					}
-					
+
 				}
 				else if(command.toLowerCase().startsWith("/subscribe")) {
 					if(command.length()<="/subscribe".length()+1) {
@@ -221,9 +237,9 @@ public class ClientMain {
 						subject=subject.substring(0,subject.lastIndexOf(" "));
 					}
 					cd.display("Subscribe to: "+subject, false);
-					DiscussionSubjectInterface dsi=r.obtientSujet(subject);
+					DiscussionSubjectInterface dsi=server.obtientSujet(subject);
 					if(dsi!=null) {
-						if(r.subscribe(dsi,cd)) {
+						if(server.subscribe(dsi,cd)) {
 							cd.display("You are now connected to '"+dsi.getTitle()+
 									"' channel", true);
 							cd.setCurrentDiscussion(dsi);
@@ -248,7 +264,7 @@ public class ClientMain {
 						subject=subject.substring(0,subject.lastIndexOf(" "));
 					}
 					cd.display("Switch to: "+subject, false);
-					DiscussionSubjectInterface dsi=r.obtientSujet(subject);
+					DiscussionSubjectInterface dsi=server.obtientSujet(subject);
 					if(dsi!=null) {
 						if(dsi.isConnected(cd.getClient())) {
 							cd.display("You switched to '"+dsi.getTitle()+
@@ -300,7 +316,25 @@ public class ClientMain {
 			System.exit(0);
 		}
 	}
-	
+
+	private void launchUI(ClientDisplayerInterface cd) throws RemoteException {
+		//repaint
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
+
+		this.discussionSubjects = new DiscussionSubjectMenu();
+		cd.getMainFrame().addSubjectPanel(discussionSubjects);
+	}
+
 	/**
 	 * Main class
 	 * @param args
