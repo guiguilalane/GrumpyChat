@@ -110,7 +110,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 					"' created the channel '"+subject+"'");
 			dsi.subscribe(c);
 			dsi.addMessage(new Message(this.client, "*** client '"+c.getPseudo()+
-					"' is now created the channel ***"));
+					"' created the channel ***"));
 			return dsi;
 		}
 		return null;
