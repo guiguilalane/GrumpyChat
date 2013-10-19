@@ -6,8 +6,8 @@ import java.util.List;
 import client.interfaces.ClientInterface;
 
 /**
- * @author Grumpy Group
  * A remote object interface for all discussion subject (sport, cinema, music, ...)
+ * @author Grumpy Group
  */
 public interface DiscussionSubjectInterface extends Remote {
 	
@@ -35,7 +35,8 @@ public interface DiscussionSubjectInterface extends Remote {
 	/**
 	 * Return true if the client in parameter is connected on this discussion
 	 * @param client {@link ClientInterface} - The client to search in the registered clients list
-	 * @return {@link Boolean boolean} - True if the client is registered on this discussion
+	 * @return {@link Boolean boolean} - <code>true</code> if the client is registered on this
+	 * discussion, <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
 	public boolean isConnected(ClientInterface client) throws RemoteException;
@@ -43,6 +44,8 @@ public interface DiscussionSubjectInterface extends Remote {
 	/**
 	 * Subscribe a {@link ClientInterface Client} to a discussion subject
 	 * @param client {@link ClientInterface} - The client to register in this discussion
+	 * @return {@link Boolean boolean} - <code>true</code> if client has been correctly added,
+	 * <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
 	public boolean subscribe(ClientInterface client)
@@ -51,6 +54,8 @@ public interface DiscussionSubjectInterface extends Remote {
 	/**
 	 * Unsubscribe a {@link ClientInterface Client} to a discussion subject
 	 * @param client {@link ClientInterface} - The client to unregister in this discussion
+	 * @return {@link Boolean boolean} - <code>true</code> if the client has been correctly removed,
+	 * <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
 	public boolean unsubscribe(ClientInterface client)
@@ -58,7 +63,8 @@ public interface DiscussionSubjectInterface extends Remote {
 
 	/**
 	 * Return true if the maximum of clients in this discussion is reached
-	 * @return {@link Boolean boolean} - True if the channel is full
+	 * @return {@link Boolean boolean} - <code>true</code> if the channel is full,
+	 * <code>false</code> otherwise
 	 * @throws RemoteException 
 	 */
 	public boolean isFull() throws RemoteException;
@@ -80,7 +86,8 @@ public interface DiscussionSubjectInterface extends Remote {
 	/**
 	 * Add a message in discussion messages list
 	 * @param message {@link MessageInterface} - The message to add
-	 * @return {@link Boolean boolean} - True if the message has been correctly added
+	 * @return {@link Boolean boolean} - <code>true</code> if the message has been
+	 * correctly added, <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
 	public boolean addMessage(MessageInterface message) throws RemoteException;

@@ -7,12 +7,14 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.UIManager;
+import javax.swing.JOptionPane;
 
 import server.objects.Message;
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
 import client.gui.GetStringDialog;
 import client.implementation.ClientDisplayer;
@@ -63,26 +65,25 @@ public class ClientMain {
 			this.tries=0;
 
 			String command="";
-
-			command=new GetStringDialog(cd.getMainFrame(), "Please enter your pseudo",
-					"Type your pseudo and validate","Pseudo",true).getValue();
-			if(command==null) {
-				cd.exit();
-			}
-			while(server.containsPseudo(command)||command.equalsIgnoreCase("server")||
-					command.isEmpty()) {
-				if(command.length()<3) {
-					cd.error("Your pseudo must have minimum 3 characters", true);
-				}
-				else {
-					cd.error("Pseudo '"+command+"' already used, please try again", true);
-				}
+			do {
 				command=new GetStringDialog(cd.getMainFrame(), "Please enter your pseudo",
 						"Type your pseudo and validate","Pseudo",true).getValue();
 				if(command==null) {
 					cd.exit();
 				}
-			}
+				else if(command.length()<3) {
+					cd.error("Your pseudo must have minimum 3 characters", true);
+					command="";
+				}
+				else if(command.length()>25) {
+					cd.error("Your pseudo must have maximum 25 characters", true);
+					command="";
+				}
+				else if(server.containsPseudo(command)||command.equalsIgnoreCase("server")) {
+					cd.error("Pseudo '"+command+"' already used, please try again", true);
+					command="";
+				}
+			} while(command.isEmpty());
 			cd.setClient(new ClientImplementation(command));
 			server.newUser(cd);
 			cd.display("Welcome "+command, true);
@@ -104,66 +105,66 @@ public class ClientMain {
 
 //			cd.display(help, true);
 
+			DiscussionSubjectInterface currentDiscussion=null;
 			Scanner sc=new Scanner(System.in);
 			do {
 				command=sc.nextLine();
 				if(command.toLowerCase().startsWith("/help")) {
 					cd.display(help, true);
 				}
-//				else if(command.toLowerCase().startsWith("/create")) {
-//					if(server.isFullChannel(cd)) {
-//						cd.error("You can not create more channel, delete one before", true);
-//						continue;
-//					}
-//					int len="/create".length();
-//					if(command.length()<="/create".length()+1) {
-//						cd.error("Please specify a message", true);
-//						continue;
-//					}
-//					String subject=command.substring(len+1,command.length());
-//					if(subject.endsWith(" ")) {
-//						subject=subject.substring(0,subject.lastIndexOf(" "));
-//					}
-//					if(server.getSubjectFromName(subject)!=null) {
-//						cd.error("The channel '"+subject+"' already exists", true);
-//						continue;
-//					}
-//					DiscussionSubjectInterface dsi = server.create(cd,subject);
-//					if(dsi!=null) {
-//						cd.setCurrentDiscussion(dsi);
-//						cd.display("The channel '"+subject+"' has been correctly " +
-//								"created", true);
-//					}
-//					else {
-//						cd.error("The channel '"+subject+"' can not be created",
-//								true);
-//					}
-//				}
-//				else if(command.toLowerCase().startsWith("/list")) {
-//					if(server.getDiscussions().isEmpty()) {
-//						cd.error("There is no discussion on the forum", true);
-//					}
-//					String list="Discussions list:\n";
-//					for(DiscussionSubjectInterface dsi:server.getDiscussions()) {
-//						list+="\t\t"+dsi.getTitle()+(dsi.isConnected(cd.getClient())?
-//								" *":"")+"\n";
-//					}
-//					cd.display(list, false);
-//					cd.getMainFrame().updateSubjectPanel(server.getDiscussions());
-//				}
-//				else if(command.toLowerCase().startsWith("/messages")) {
-//					if(cd.getCurrentDiscussion()==null) {
-//						cd.error("You don't have current discussion", true);
-//					}
-//					else {
-//						List<MessageInterface> messages=cd.getCurrentDiscussion()
-//								.getMessages();
-//						for(MessageInterface msg:messages) {
-//							cd.display(msg.getDateString()+msg.getClient().getPseudo()+
-//									": "+msg.getMessage(), false);
-//						}
-//					}
-//				}
+				else if(command.toLowerCase().startsWith("/create")) {
+					if(server.isFullChannel(cd)) {
+						cd.error("You can not create more channel, delete one before", true);
+						continue;
+					}
+					int len="/create".length();
+					if(command.length()<="/create".length()+1) {
+						cd.error("Please specify a message", true);
+						continue;
+					}
+					String subject=command.substring(len+1,command.length());
+					if(subject.endsWith(" ")) {
+						subject=subject.substring(0,subject.lastIndexOf(" "));
+					}
+					if(server.getSubjectFromName(subject)!=null) {
+						cd.error("The channel '"+subject+"' already exists", true);
+						continue;
+					}
+					DiscussionSubjectInterface dsi = server.create(cd,subject);
+					if(dsi!=null) {
+						currentDiscussion=dsi;
+						cd.display("The channel '"+subject+"' has been correctly " +
+								"created", true);
+					}
+					else {
+						cd.error("The channel '"+subject+"' can not be created",
+								true);
+					}
+				}
+				else if(command.toLowerCase().startsWith("/list")) {
+					if(server.getDiscussions().isEmpty()) {
+						cd.error("There is no discussion on the forum", true);
+					}
+					String list="Discussions list:\n";
+					for(DiscussionSubjectInterface dsi:server.getDiscussions()) {
+						list+="\t\t"+dsi.getTitle()+(dsi.isConnected(cd.getClient())?
+								" *":"")+"\n";
+					}
+					cd.display(list, false);
+					cd.getMainFrame().updateSubjectPanel(server.getDiscussions());
+				}
+				else if(command.toLowerCase().startsWith("/messages")) {
+					if(currentDiscussion==null) {
+						cd.error("You don't have current discussion", true);
+					}
+					else {
+						List<MessageInterface> messages=currentDiscussion.getMessages();
+						for(MessageInterface msg:messages) {
+							cd.display(msg.getDateString()+msg.getClient().getPseudo()+
+									": "+msg.getMessage(), false);
+						}
+					}
+				}
 				else if(command.toLowerCase().startsWith("/remove")) {
 					int len="/remove".length();
 					if(command.length()<="/remove".length()+1) {
@@ -180,10 +181,9 @@ public class ClientMain {
 					}
 					DiscussionSubjectInterface dsi=server.remove(cd, subject);
 					if(dsi!=null) {
-						if(cd.getCurrentDiscussion().equals(dsi)) {
-							cd.setCurrentDiscussion(dsi);
+						if(currentDiscussion.equals(dsi)) {
+							currentDiscussion=dsi;
 						}
-						cd.removeDiscussion(dsi);
 						cd.display("The channel '"+subject+"' has been correctly " +
 								"removed", true);
 					}
@@ -201,11 +201,11 @@ public class ClientMain {
 					if(message.endsWith(" ")) {
 						message=message.substring(0,message.lastIndexOf(" "));
 					}
-					if(cd.getCurrentDiscussion()==null) {
+					if(currentDiscussion==null) {
 						cd.error("You don't have current discussion", true);
 					}
 					else {
-						cd.getCurrentDiscussion().addMessage(
+						currentDiscussion.addMessage(
 								new Message(cd.getClient(), message));
 					}
 
@@ -226,7 +226,7 @@ public class ClientMain {
 						if(server.subscribe(dsi,cd)) {
 							cd.display("You are now connected to '"+dsi.getTitle()+
 									"' channel", true);
-							cd.addDiscussion(dsi);
+							currentDiscussion=dsi;
 						}
 						else {
 							cd.error("You failed to connect to '"+dsi.getTitle()+
@@ -253,7 +253,7 @@ public class ClientMain {
 						if(dsi.isConnected(cd.getClient())) {
 							cd.display("You switched to '"+dsi.getTitle()+
 									"' channel", false);
-							cd.addDiscussion(dsi);
+							currentDiscussion=dsi;
 						}
 						else {
 							cd.error("You did not subscribe to '"+dsi.getTitle()+
@@ -307,14 +307,15 @@ public class ClientMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
 			new ClientMain().start(new ClientDisplayer());
 		} catch (RemoteException e) {
 			System.err.println("Error while loading client");
+			JOptionPane.showMessageDialog(null, "The client could not be started", "Client error",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			System.exit(0);
+		} catch (Exception e) {
+			System.err.println("Caught error: ");
 			e.printStackTrace();
 			System.exit(0);
 		}

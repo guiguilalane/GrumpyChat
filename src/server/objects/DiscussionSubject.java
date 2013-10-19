@@ -64,7 +64,7 @@ public class DiscussionSubject extends UnicastRemoteObject
 	@Override
 	public boolean addMessage(MessageInterface message) throws RemoteException {
 		if(this.clients.contains(message.getClient())||
-				message.getClient().getPseudo().equalsIgnoreCase("server"))
+				message.getClient().equals(ServerForum.CLIENT))
 		{
 			this.messages.add(message);
 			return true;
@@ -109,6 +109,34 @@ public class DiscussionSubject extends UnicastRemoteObject
 	@Override
 	public boolean isConnected(ClientInterface client) throws RemoteException {
 		return this.clients.contains(client);
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + maxClients;
+		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DiscussionSubject other = (DiscussionSubject) obj;
+		if (maxClients != other.maxClients)
+			return false;
+		if (title == null) {
+			if (other.title != null)
+				return false;
+		} else if (!title.equals(other.title))
+			return false;
+		return true;
 	}
 
 	@Override

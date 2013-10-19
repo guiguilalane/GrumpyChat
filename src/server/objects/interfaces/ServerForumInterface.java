@@ -4,13 +4,25 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
+import client.interfaces.ClientInterface;
 
 /**
  * The server forum interface
  * @author Grumpy Group
  */
 public interface ServerForumInterface extends Remote {
+
+	/**
+	 * The server client instance, used to send message for example
+	 */
+	public static final ClientInterface CLIENT = new ClientImplementation("SERVER");
+	/**
+	 * Set the maximum of {@link DiscussionSubjectInterface channels} that a user
+	 * can create
+	 */
+	public static final int CLIENT_MAX_CHANNEL=3;
 
 	/**
 	 * Returns the DiscussionSubject identified by a string title, <code>null</code>
@@ -60,6 +72,18 @@ public interface ServerForumInterface extends Remote {
 	 */
 	public boolean subscribe(DiscussionSubjectInterface dsi
 			, ClientDisplayerInterface client) throws RemoteException;
+	
+	/**
+	 * Send a request on the {@link DiscussionSubjectInterface discussion subject}
+	 * to remove this user in its list
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion subject
+	 * @param client {@link ClientDisplayerInterface} - The client to subscribe
+	 * @return {@link Boolean boolean} - <code>true</code> if the unsubscription
+	 * has been correctly done, <code>false</code> otherwise
+	 * @throws RemoteException
+	 */
+	public boolean unsubscribe(DiscussionSubjectInterface dsi
+			, ClientDisplayerInterface client) throws RemoteException;
 
 	/**
 	 * Returns the discussion subject list
@@ -77,6 +101,16 @@ public interface ServerForumInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public boolean newUser(ClientDisplayerInterface client) 
+			throws RemoteException;
+
+	/**
+	 * Remove an user from the {@link server.objects.ServerForum#clients connected users list}
+	 * @param client {@link ClientDisplayerInterface} - The client to add
+	 * @return {@link Boolean boolean} - <code>true</code> if the client has been
+	 * correctly removed, <code>false</code> otherwise
+	 * @throws RemoteException
+	 */
+	public boolean disconnectUser(ClientDisplayerInterface client) 
 			throws RemoteException;
 
 	/**
@@ -135,7 +169,6 @@ public interface ServerForumInterface extends Remote {
 	public DiscussionSubjectInterface remove(ClientDisplayerInterface client, String subject)
 			throws RemoteException;
 
-
 	/**
 	 * Returns <code>true</code> if the specific {@link ClientDisplayerInterface user}
 	 * is the author of a specific {@link DiscussionSubjectInterface channel}
@@ -147,5 +180,41 @@ public interface ServerForumInterface extends Remote {
 	 */
 	public boolean isChannelOwner(ClientDisplayerInterface client,
 			String subject) throws RemoteException;
+
+	/**
+	 * Add a message on a discussion
+	 * @param client {@link ClientDisplayerInterface} - The client controller source
+	 * @param discussion {@link DiscussionSubjectInterface} - The discussion to add the message
+	 * @param msg {@link MessageInterface} - The message to add
+	 * @return {@link Boolean boolean} - <code>true</code> if the message has been correctly added
+	 * in the discussion, <code>false</code> otherwise
+	 * @throws RemoteException
+	 */
+	public boolean addMessage(ClientDisplayerInterface client, DiscussionSubjectInterface discussion, MessageInterface msg)
+		throws RemoteException;
+
+	/**
+	 * Send a notification to all users to update their channel list
+	 * @param client {@link ClientDisplayerInterface} - The controller source
+	 * @throws RemoteException
+	 */
+	void broadCastUpdateFrame(ClientDisplayerInterface client)
+			throws RemoteException;
+
+	/**
+	 * Close all discussion frames for users that have it open for a specific discussion
+	 * @param client {@link ClientDisplayerInterface} - The client controller source
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to close frame
+	 */
+	public void closeFrames(ClientDisplayerInterface client, DiscussionSubjectInterface dsi)
+			throws RemoteException;
+
+	/**
+	 * Return the owner's pseudo of a specific discussion
+	 * @param discussion {@link DiscussionSubjectInterface} - The discussion
+	 * @return {@link String} - The discussion owner's pseudo
+	 * @throws RemoteException
+	 */
+	public String getOwner(DiscussionSubjectInterface discussion) throws RemoteException;
 
 }

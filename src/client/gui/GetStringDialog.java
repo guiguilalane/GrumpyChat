@@ -16,6 +16,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+/**
+ * A JDialog to get a {@link String} from a {@link JTextField}
+ * @author Grumpy Group
+ *
+ */
 public class GetStringDialog extends JDialog implements ActionListener {
 
 	/**
@@ -94,10 +99,10 @@ public class GetStringDialog extends JDialog implements ActionListener {
 		else if(event.getSource().equals(this.validateButton)) {
 			String textValue=this.pseudoField.getText();
 
-			while(textValue.endsWith(" ")) {
-				textValue=textValue.substring(0,textValue.lastIndexOf(" "));
-			}
 			while(textValue.startsWith(" ")) {
+				textValue=textValue.substring(1,textValue.length());
+			}
+			while(textValue.endsWith(" ")) {
 				textValue=textValue.substring(0,textValue.lastIndexOf(" "));
 			}
 			this.value = textValue;

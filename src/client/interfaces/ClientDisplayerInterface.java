@@ -1,10 +1,14 @@
 package client.interfaces;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
+
+import javax.swing.JFrame;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
-
+import client.gui.ClientDiscussionFrame;
 import client.gui.ClientMainFrame;
 import client.implementation.ClientImplementation;
 
@@ -20,38 +24,6 @@ import client.implementation.ClientImplementation;
  * @author Grumpy Group
  */
 public interface ClientDisplayerInterface extends Remote {
-	
-	/**
-	 * Returns the current discussion
-	 * @return {@link DiscussionSubjectInterface} - The current discussion
-	 * @throws RemoteException
-	 */
-	public DiscussionSubjectInterface getCurrentDiscussion()
-			throws RemoteException;
-	/**
-	 * Define the current discussion
-	 * @param currentDiscussion {@link DiscussionSubjectInterface} - The current
-	 * discussion
-	 * @throws RemoteException
-	 */
-	public void setCurrentDiscussion(DiscussionSubjectInterface dsi)
-			throws RemoteException;
-
-	/**
-	 * Add a discussion as button
-	 * @param currentDiscussion {@link DiscussionSubjectInterface} - The discussion
-	 * @throws RemoteException
-	 */
-	void addDiscussion(DiscussionSubjectInterface currentDiscussion)
-			throws RemoteException;
-
-	/**
-	 * Remove a discussion as button
-	 * @param currentDiscussion {@link DiscussionSubjectInterface} - The discussion
-	 * @throws RemoteException
-	 */
-	public void removeDiscussion(DiscussionSubjectInterface dsi)
-			throws RemoteException;
 
 	/**
 	 * Return the client of this interface
@@ -65,15 +37,23 @@ public interface ClientDisplayerInterface extends Remote {
 	 * @param client {@link ClientImplementation} - The client instance
 	 * @throws RemoteException
 	 */
-	void setClient(ClientImplementation client)
+	public void setClient(ClientImplementation client)
 			throws RemoteException;
 
 	/**
 	 * Display the message on the client's displayer
-	 * @param message
+	 * @param message {@link String} - The message to display
 	 * @throws RemoteException
 	 */
 	public void display(String message, boolean inFrame) throws RemoteException;
+
+	/**
+	 * Display the message in frame from a parent frame
+	 * @param message {@link String} - The message to display
+	 * @param clientDiscussionFrame {@link JFrame} - The parent frame
+	 * @throws RemoteException
+	 */
+	public void display(String message, JFrame parent) throws RemoteException;
 
 	/**
 	 * Display the error on the client's displayer
@@ -95,6 +75,15 @@ public interface ClientDisplayerInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public void getMessage(String message) throws RemoteException;
+	
+	/**
+	 * Receive a message on a specific channel
+	 * @param message {@link MessageInterface} - The message to receive
+	 * @param dsi {@link DiscussionSubjectInterface} - The channel
+	 * @throws RemoteException
+	 */
+	public void getMessage(MessageInterface message, DiscussionSubjectInterface dsi)
+			throws RemoteException;
 
 	/**
 	 * Close the server connection and exit interface
@@ -115,5 +104,64 @@ public interface ClientDisplayerInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public ServerForumInterface getServer() throws RemoteException;
+	
+	/**
+	 * Open a discussion frame in the client side
+	 * @param cdf {@link ClientDiscussionFrame} - The discussion frame to open
+	 * @return {@link Boolean boolean} - <code>true</code> if the discussion has been
+	 * correctly opened, <code>false</code> otherwise
+	 * @throws RemoteException
+	 */
+	public boolean openDiscussion(ClientDiscussionFrame cdf)
+			throws RemoteException;
+	
+	/**
+	 * Returns <code>true</code> if the discussion is opened in a frame
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion subject to search
+	 * @return {@link Boolean boolean} - <code>true</code> if the discussion is opened
+	 * in a frame
+	 * @throws RemoteException
+	 */
+	public boolean isOpenedDiscussion(DiscussionSubjectInterface dsi)
+			throws RemoteException;
+	
+	/**
+	 * Returns the {@link ClientDiscussionFrame frame} in which the
+	 * {@link DiscussionSubjectInterface discussion} is opened
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion subject to search
+	 * @return {@link ClientDiscussionFrame} - 
+	 * @throws RemoteException
+	 */
+	public ClientDiscussionFrame getDiscussionFrame(DiscussionSubjectInterface dsi)
+			throws RemoteException;
+	
+	/**
+	 * Add an user in a specific channel 
+	 * @param ci {@link ClientInterface} - The client to add
+	 * @param dsi {@link DiscussionSubjectInterface} - The channel in which to add the client
+	 */
+	public void newUser(ClientInterface ci,
+			DiscussionSubjectInterface dsi) throws RemoteException;
+	
+	/**
+	 * Update the channel buttons list from given channels list
+	 * @param list {@link List}<{@link DiscussionSubjectInterface}> - The list of discussions
+	 * @throws RemoteException
+	 */
+	public void updateChannelList(List<DiscussionSubjectInterface> list) throws RemoteException;
+
+	/**
+	 * Close the discussion frame for specific discussion
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to clos its frame
+	 * @throws RemoteException
+	 */
+	public void closeDiscussionFrame(DiscussionSubjectInterface dsi) throws RemoteException;
+
+	/**
+	 * Close the discussion and remove it from list of opened discussion
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to close
+	 * @throws RemoteException 
+	 */
+	public void closeDiscussion(DiscussionSubjectInterface dsi) throws RemoteException;
 
 }

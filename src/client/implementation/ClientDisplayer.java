@@ -3,11 +3,17 @@ package client.implementation;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
+import client.gui.ClientDiscussionFrame;
 import client.gui.ClientMainFrame;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
@@ -28,9 +34,10 @@ public class ClientDisplayer extends UnicastRemoteObject
 	 * The {@link ClientInterface client} used 
 	 */
 	private ClientImplementation client;
-	private DiscussionSubjectInterface currentDiscussion = null;
 	private ClientMainFrame mainFrame;
 	private ServerForumInterface server;
+	private List<ClientDiscussionFrame> openedDiscussion=
+			new ArrayList<ClientDiscussionFrame>();
 
 	/**
 	 * Instance constructor
@@ -38,33 +45,12 @@ public class ClientDisplayer extends UnicastRemoteObject
 	 */
 	public ClientDisplayer() throws RemoteException {
 		super();
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		this.mainFrame=new ClientMainFrame(this);
-	}
-
-	@Override
-	public DiscussionSubjectInterface getCurrentDiscussion()
-			throws RemoteException {
-		return currentDiscussion;
-	}
-
-	@Override
-	public void setCurrentDiscussion(DiscussionSubjectInterface dsi)
-			throws RemoteException {
-		this.currentDiscussion = dsi;
-	}
-
-	@Override
-	public void addDiscussion(DiscussionSubjectInterface dsi)
-			 throws RemoteException {
-		this.mainFrame.addDiscussion(dsi);
-		this.currentDiscussion = dsi;
-	}
-
-	@Override
-	public void removeDiscussion(DiscussionSubjectInterface dsi)
-			throws RemoteException {
-		this.mainFrame.removeDiscussion(dsi);
-		this.currentDiscussion = null;
 	}
 
 	@Override
@@ -93,10 +79,34 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
+	public void newUser(ClientInterface client,
+			DiscussionSubjectInterface dsi) throws RemoteException {
+		for(ClientDiscussionFrame cdf:this.openedDiscussion) {
+			if(cdf.getDiscussion().equals(dsi)) {
+				cdf.newUser(client);
+				return;
+			}
+		}
+	}
+	
+	@Override
 	public void exit() throws RemoteException {
-		//r.exit(this);
+		this.server.disconnectUser(this);
 		this.display("See you later dude!", true);
 		System.exit(0);
+	}
+	
+	@Override
+	public void closeDiscussionFrame(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		this.getDiscussionFrame(dsi).closeFrame();
+		this.closeDiscussion(dsi);
+	}
+	
+	@Override
+	public void closeDiscussion(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		this.openedDiscussion.remove(this.getDiscussionFrame(dsi));		
 	}
 	
 	@Override
@@ -113,10 +123,19 @@ public class ClientDisplayer extends UnicastRemoteObject
 	@Override
 	public void display(String message, boolean inFrame) throws RemoteException {
 		if(inFrame) {
-			JOptionPane.showMessageDialog(this.mainFrame, "<html>"+
-					message.replaceAll("\n", "<br>")+"</html>", "Information",
-					JOptionPane.INFORMATION_MESSAGE);
+			this.display(message, this.mainFrame);
 		}
+		else {
+			System.out.println("[LOG]: "+message);
+			this.mainFrame.displayLog(message);
+		}
+	}
+	
+	@Override
+	public void display(String message, JFrame parent) throws RemoteException {
+		JOptionPane.showMessageDialog(parent, "<html>"+
+				message.replaceAll("\n", "<br>")+"</html>", "Information",
+				JOptionPane.INFORMATION_MESSAGE);
 		System.out.println("[LOG]: "+message);
 		this.mainFrame.displayLog(message);
 	}
@@ -127,9 +146,62 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
+	public void getMessage(MessageInterface message, DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		ClientDiscussionFrame frame=this.getDiscussionFrame(dsi);
+		if(frame==null) {
+			return;
+		}
+		frame.setVisible(true);
+		frame.displayMessage(message);
+	}
+	
+//	private DiscussionSubjectInterface getDiscussionSubject(ClientDiscussionFrame frame) {
+//		for(ClientDiscussionFrame cdf:this.openedDiscussion) {
+//			if(cdf.equals(frame)) {
+//				return frame.getDiscussion();
+//			}
+//		}
+//		return null;
+//	}
+	
+	@Override
+	public synchronized ClientDiscussionFrame getDiscussionFrame(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		for(ClientDiscussionFrame frame:this.openedDiscussion) {
+			if(frame==null) {
+				continue;
+			}
+			if(frame.getDiscussion().getTitle().equalsIgnoreCase(dsi.getTitle())) {
+				return frame;
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean isOpenedDiscussion(DiscussionSubjectInterface dsi)
+		throws RemoteException {
+		return this.getDiscussionFrame(dsi)!=null;
+	}
+	
+	@Override
+	public synchronized boolean openDiscussion(ClientDiscussionFrame cdf)
+		throws RemoteException {
+		if(this.openedDiscussion.contains(cdf)) {
+			return false;
+		}
+		return this.openedDiscussion.add(cdf);
+	}
+	
+	@Override
+	public void updateChannelList(List<DiscussionSubjectInterface> list) throws RemoteException {
+		this.getMainFrame().updateSubjectPanel(list);
+	}
+	
+	@Override
 	public String toString() {
-		return "ClientDisplayer [client=" + client + 
-				", currentDiscussion=" + currentDiscussion + "]";
+		return "ClientDisplayer [client=" + client + "]";
 	}
 
 }

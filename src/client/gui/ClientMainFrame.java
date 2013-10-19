@@ -12,6 +12,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
@@ -35,7 +37,7 @@ import client.implementation.ClientDisplayer;
  * This class is the main frame of the client side
  * @author Grumpy Group
  */
-public class ClientMainFrame extends JFrame implements ActionListener {
+public class ClientMainFrame extends JFrame implements ActionListener, ComponentListener {
 
 	/**
 	 * ID
@@ -141,6 +143,7 @@ public class ClientMainFrame extends JFrame implements ActionListener {
 		
 		this.pack();
 		this.setVisible(true);
+		this.addComponentListener(this);
 	}
 
 	/**
@@ -201,20 +204,47 @@ public class ClientMainFrame extends JFrame implements ActionListener {
 		for(DiscussionSubjectInterface dsi:list) {
 			this.subjectsPanel.addDiscussionSubject(this.cd,dsi);
 		}
-		this.subjectsPanel.repaint();
-		this.setVisible(true);
+		if(!this.subjectsPanel.isPositioned()) {
+			this.subjectsPanel.updatePanel();
+		}
+		this.pack();
 	}
 
 	public void addDiscussion(DiscussionSubjectInterface dsi) {
 		this.subjectsPanel.addDiscussionSubject(this.cd,dsi);
-		this.subjectsPanel.repaint();
-		this.setVisible(true);
+		this.pack();
 	}
 
 	public void removeDiscussion(DiscussionSubjectInterface dsi) {
-		this.subjectsPanel.addDiscussionSubject(this.cd,dsi);
-		this.subjectsPanel.repaint();
-		this.setVisible(true);
+		this.subjectsPanel.removeDiscussionSubject(this.cd,dsi);
+		this.pack();
+	}
+	
+	@Override
+	public void repaint() {
+		try {
+			super.repaint();
+		} catch (Exception e) {
+			System.err.println("Error while repainting main frame");
+		}
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent event) {
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent event) {
+	}
+	
+	@Override
+	public void componentResized(ComponentEvent event) {
+		this.frameWidth=this.getWidth();
+		this.subjectsPanel.setScrollWidth(this.frameWidth);
+	}
+
+	@Override
+	public void componentShown(ComponentEvent event) {
 	}
 
 	@Override
@@ -245,16 +275,25 @@ public class ClientMainFrame extends JFrame implements ActionListener {
 					if(subject==null) {
 						return;
 					}
-					if(this.cd.getServer().getSubjectFromName(subject)!=null) {
+					else if(subject.length()<5) {
+						this.cd.error("The channel name must contain at least 5 characters", true);
+						subject="";
+					}
+					else if(subject.length()>30) {
+						this.cd.error("The channel name must have maximum 30 characters", true);
+						subject="";
+					}
+					else if(this.cd.getServer().getSubjectFromName(subject)!=null) {
 						this.cd.error("The channel '"+subject+"' already exists", true);
 						subject="";
 					}
 				} while(subject.isEmpty());
 				DiscussionSubjectInterface dsi = this.cd.getServer().create(this.cd,subject);
 				if(dsi!=null) {
-					this.cd.addDiscussion(dsi);
+					this.updateSubjectPanel(this.cd.getServer().getDiscussions());
 					this.cd.display("The channel '"+subject+"' has been correctly " +
 							"created", true);
+					this.cd.openDiscussion(new ClientDiscussionFrame(this.cd, dsi));	
 				}
 				else {
 					this.cd.error("The channel '"+subject+"' can not be created",

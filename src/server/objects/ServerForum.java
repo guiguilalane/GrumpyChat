@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
-import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
 
@@ -34,15 +34,6 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	 */
 	private List<ClientDisplayerInterface> clients=
 			new ArrayList<ClientDisplayerInterface>();
-	/**
-	 * The server client instance, used to send message for example
-	 */
-	private ClientInterface client = new ClientImplementation("SERVER");
-	/**
-	 * Set the maximum of {@link DiscussionSubjectInterface channels} that a user
-	 * can create
-	 */
-	private static final int CLIENT_MAX_CHANNEL=3;
 	
 	/**
 	 * Default Constructor
@@ -125,15 +116,50 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	}
 	
 	@Override
+	public String getOwner(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		if(this.discussionSubjects.isEmpty()) {
+			return ServerForumInterface.CLIENT.getPseudo();
+		}
+		ClientDisplayerInterface cdi=this.discussionSubjects.get(dsi);
+		if(cdi==null) {
+			return ServerForumInterface.CLIENT.getPseudo();
+		}
+		ClientInterface ci=cdi.getClient();
+		ci=ci==null?ServerForumInterface.CLIENT:ci;
+		return ci.getPseudo();
+	}
+	
+	@Override
 	public synchronized DiscussionSubjectInterface remove(ClientDisplayerInterface client,
 			String subject) throws RemoteException {
-		if(this.getSubjectFromName(subject)==null||
-				!this.isChannelOwner(client, subject)) {
+		DiscussionSubjectInterface dsi=this.getSubjectFromName(subject);
+		if(dsi==null||!this.isChannelOwner(client, subject)) {
 			return null;
 		}
-		DiscussionSubjectInterface dsi=this.getSubjectFromName(subject);
-		this.discussionSubjects.remove(this.getSubjectFromName(subject));
+		this.unsubscribe(dsi, client);
+		for(ClientDisplayerInterface c:this.clients) {
+			if(client==null||!client.equals(c)) {
+				if(dsi.isConnected(c.getClient())&&c.isOpenedDiscussion(dsi)) {
+					this.unsubscribe(dsi, c, true);
+				}
+			}
+		}
+		this.broadCast(client, "The client '"+client.getClient().getPseudo()+
+				"' removed the channel '"+subject+"'");
+		this.discussionSubjects.remove(dsi);
+		this.broadCastUpdateFrame(client);
 		return dsi;
+	}
+	
+	@Override
+	public void closeFrames(ClientDisplayerInterface client,
+			DiscussionSubjectInterface dsi) throws RemoteException {
+		for(ClientDisplayerInterface cdi:this.clients) {
+			if(!cdi.equals(client)&&cdi.isOpenedDiscussion(dsi)) {
+				cdi.closeDiscussionFrame(dsi);
+			}
+		}
 	}
 
 	@Override
@@ -149,8 +175,9 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 		if(created) {
 			this.broadCast(client, "The client '"+c.getPseudo()+
 					"' created the channel '"+subject+"'");
+			this.broadCastUpdateFrame(client);
 			dsi.subscribe(c);
-			dsi.addMessage(new Message(this.client, "*** client '"+c.getPseudo()+
+			dsi.addMessage(new Message(ServerForum.CLIENT, "*** client '"+c.getPseudo()+
 					"' created the channel ***"));
 			return dsi;
 		}
@@ -158,21 +185,61 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	}
 	
 	@Override
+	public void broadCastUpdateFrame(ClientDisplayerInterface client)
+			throws RemoteException {
+		for(ClientDisplayerInterface c:this.clients) {
+			if(client==null||!client.equals(c)) {
+				c.updateChannelList(this.getDiscussions());
+			}
+		}
+	}
+
+	@Override
 	public synchronized boolean subscribe(DiscussionSubjectInterface dsi,
 			ClientDisplayerInterface client) throws RemoteException {
-		ClientInterface c=client.getClient();
-		boolean subscribed = dsi.subscribe(c);
+		ClientInterface ci=client.getClient();
+		boolean subscribed = dsi.subscribe(ci);
 		if(subscribed) {
-			this.broadCast(client, "The client '"+c.getPseudo()+
+			this.broadCast(client, "The client '"+ci.getPseudo()+
 					"' subscribed to channel '"+dsi.getTitle()+"'");
-			dsi.addMessage(new Message(this.client, "*** client '"+c.getPseudo()+
-					"' is now connected on this channel ***"));
+			for(ClientDisplayerInterface c:this.clients) {
+				if(!c.getClient().equals(ci)&&dsi.isConnected(c.getClient())&&
+						c.isOpenedDiscussion(dsi)) {
+					c.newUser(ci,dsi);
+				}
+			}
 		}
 		else {
-			System.err.println("The client '"+c.getPseudo()+
+			System.err.println("The client '"+ci.getPseudo()+
 					"' failed to subscribe to channel '"+dsi.getTitle()+"'");
 		}
 		return subscribed;
+	}
+	
+	@Override
+	public synchronized boolean unsubscribe(DiscussionSubjectInterface dsi,
+			ClientDisplayerInterface client) throws RemoteException {
+		return this.unsubscribe(dsi, client, false);
+	}
+	
+	private synchronized boolean unsubscribe(DiscussionSubjectInterface dsi,
+			ClientDisplayerInterface client, boolean silent) throws RemoteException {
+		ClientInterface ci=client.getClient();
+		if(this.isChannelOwner(client, dsi.getTitle())) {
+			this.discussionSubjects.put(dsi, null);
+		}
+		boolean unsubscribed = dsi.unsubscribe(ci);
+		if(unsubscribed) {
+			if(!silent) {
+				this.broadCast(client, "The client '"+ci.getPseudo()+
+						"' left the channel '"+dsi.getTitle()+"'");
+			}
+		}
+		else {
+			System.err.println("The client '"+ci.getPseudo()+
+					"' failed to unsubscribe to channel '"+dsi.getTitle()+"'");
+		}
+		return unsubscribed;
 	}
 
 	@Override
@@ -196,6 +263,39 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public synchronized boolean disconnectUser(ClientDisplayerInterface client)
+			throws RemoteException {
+		if(!this.clients.contains(client)) {
+			return false;
+		}
+		for(DiscussionSubjectInterface dsi:this.discussionSubjects.keySet()) {
+			if(dsi.isConnected(client.getClient())) {
+				this.unsubscribe(dsi, client, true);
+			}
+		}
+		this.broadCast(client,"Client '"+client.getClient().getPseudo()+
+				"' has left the server");
+		return this.clients.remove(client);
+	}
+	
+	@Override
+	public synchronized boolean addMessage(ClientDisplayerInterface client, DiscussionSubjectInterface discussion, 
+			MessageInterface msg) throws RemoteException {
+		if(!discussion.addMessage(msg)) {
+			return false;
+		}
+		client.getMessage(msg,discussion);
+		for(ClientDisplayerInterface c:this.clients) {
+			if(client==null||!client.equals(c)) {
+				if(discussion.isConnected(client.getClient())) {
+					c.getMessage(msg,discussion);
+				}
+			}
+		}
+		return true;
 	}
 	
 	@Override
