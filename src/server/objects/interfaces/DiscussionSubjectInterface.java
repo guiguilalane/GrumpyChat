@@ -3,6 +3,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
 
 /**
@@ -24,6 +25,13 @@ public interface DiscussionSubjectInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public List<ClientInterface> getClients() throws RemoteException;
+	
+	/**
+	 * Return the discussion client owner of this one
+	 * @return {@link ClientDisplayerInterface} - The Client controller
+	 * @throws RemoteException
+	 */
+	public ClientDisplayerInterface getOwner() throws RemoteException;
 	
 	/**
 	 * Return the clients list registered on this discussion in {@link String} format
@@ -75,6 +83,13 @@ public interface DiscussionSubjectInterface extends Remote {
 	 * @throws RemoteException 
 	 */
 	public void setMaxClients(int max) throws RemoteException;
+
+	/**
+	 * Set the discussion owner
+	 * @param owner {@link ClientDisplayerInterface} - The new discussion owner
+	 * @throws RemoteException 
+	 */
+	public void setOwner(ClientDisplayerInterface owner) throws RemoteException;
 
 	/**
 	 * Return the messages of this discussion

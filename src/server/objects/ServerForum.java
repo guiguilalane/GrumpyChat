@@ -3,9 +3,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
@@ -27,8 +25,8 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	 * The map of the {@link DiscussionSubjectInterface discussion subjects} and
 	 * their {@link ClientDisplayerInterface authors}
 	 */
-	private Map<DiscussionSubjectInterface,ClientDisplayerInterface> discussionSubjects=
-			new HashMap<DiscussionSubjectInterface,ClientDisplayerInterface>();
+	private List<DiscussionSubjectInterface> discussionSubjects=
+			new ArrayList<DiscussionSubjectInterface>();
 	/**
 	 * The list of all connected {@link ClientDisplayerInterface users} on the forum
 	 */
@@ -49,14 +47,14 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	public void initializedDiscussions()
 	{
 		try {
-			this.discussionSubjects.put(new DiscussionSubject("Chat"),
-					null);
-			this.discussionSubjects.put(new DiscussionSubject("Mangas"),
-					null);
-			this.discussionSubjects.put(new DiscussionSubject("LoL"),
-					null);
-			this.discussionSubjects.put(new DiscussionSubject("Seeking for feeder"),
-					null);
+			this.discussionSubjects.add(new DiscussionSubject("Chat",
+					null));
+			this.discussionSubjects.add(new DiscussionSubject("Mangas",
+					null));
+			this.discussionSubjects.add(new DiscussionSubject("LoL",
+					null));
+			this.discussionSubjects.add(new DiscussionSubject("Seeking for feeder",
+					null));
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -85,16 +83,15 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	@Override
 	public synchronized List<DiscussionSubjectInterface> getDiscussions()
 			throws RemoteException {
-		return new ArrayList<DiscussionSubjectInterface>(
-				this.discussionSubjects.keySet());
+		return this.discussionSubjects;
 	}
 	
 	@Override
-	public synchronized int getNumberOfChannel(ClientDisplayerInterface client) {
+	public synchronized int getNumberOfChannel(ClientDisplayerInterface client)
+			throws RemoteException {
 		int nbChannel=0;
-		for(DiscussionSubjectInterface dsi:this.discussionSubjects.keySet()) {
-			if(this.discussionSubjects.get(dsi)!=null&&
-					this.discussionSubjects.get(dsi).equals(client)) {
+		for(DiscussionSubjectInterface dsi:this.discussionSubjects) {
+			if(dsi.getOwner()!=null&&dsi.getOwner().equals(client)) {
 				nbChannel++;
 			}
 		}
@@ -111,7 +108,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	public synchronized boolean isChannelOwner(ClientDisplayerInterface client,
 			String subject) throws RemoteException {
 		DiscussionSubjectInterface dsi=this.getSubjectFromName(subject);
-		ClientDisplayerInterface cdi=this.discussionSubjects.get(dsi);
+		ClientDisplayerInterface cdi=dsi.getOwner();
 		return cdi!=null&&cdi.equals(client);
 	}
 	
@@ -121,7 +118,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 		if(this.discussionSubjects.isEmpty()) {
 			return ServerForumInterface.CLIENT.getPseudo();
 		}
-		ClientDisplayerInterface cdi=this.discussionSubjects.get(dsi);
+		ClientDisplayerInterface cdi=dsi.getOwner();
 		if(cdi==null) {
 			return ServerForumInterface.CLIENT.getPseudo();
 		}
@@ -153,11 +150,21 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	}
 	
 	@Override
-	public void closeFrames(ClientDisplayerInterface client,
+	public synchronized void closeFrames(ClientDisplayerInterface client,
 			DiscussionSubjectInterface dsi) throws RemoteException {
 		for(ClientDisplayerInterface cdi:this.clients) {
 			if(!cdi.equals(client)&&cdi.isOpenedDiscussion(dsi)) {
+				cdi.setInactiveDiscussion(dsi);
+			}
+		}
+		for(ClientDisplayerInterface cdi:this.clients) {
+			if(!cdi.equals(client)&&cdi.isOpenedDiscussion(dsi)) {
 				cdi.closeDiscussionFrame(dsi);
+			}
+		}
+		for(ClientDisplayerInterface cdi:this.clients) {
+			if(!cdi.equals(client)&&cdi.isOpenedDiscussion(dsi)) {
+				cdi.disposeDiscussionFrame(dsi);
 			}
 		}
 	}
@@ -170,8 +177,8 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 			return null;
 		}
 		ClientInterface c=client.getClient();
-		DiscussionSubjectInterface dsi=new DiscussionSubject(subject);
-		boolean created = this.discussionSubjects.put(dsi,client)==null;
+		DiscussionSubjectInterface dsi=new DiscussionSubject(subject, client);
+		boolean created = this.discussionSubjects.add(dsi);
 		if(created) {
 			this.broadCast(client, "The client '"+c.getPseudo()+
 					"' created the channel '"+subject+"'");
@@ -185,7 +192,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	}
 	
 	@Override
-	public void broadCastUpdateFrame(ClientDisplayerInterface client)
+	public synchronized void broadCastUpdateFrame(ClientDisplayerInterface client)
 			throws RemoteException {
 		for(ClientDisplayerInterface c:this.clients) {
 			if(client==null||!client.equals(c)) {
@@ -225,14 +232,17 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 	private synchronized boolean unsubscribe(DiscussionSubjectInterface dsi,
 			ClientDisplayerInterface client, boolean silent) throws RemoteException {
 		ClientInterface ci=client.getClient();
-		if(this.isChannelOwner(client, dsi.getTitle())) {
-			this.discussionSubjects.put(dsi, null);
-		}
 		boolean unsubscribed = dsi.unsubscribe(ci);
 		if(unsubscribed) {
 			if(!silent) {
 				this.broadCast(client, "The client '"+ci.getPseudo()+
 						"' left the channel '"+dsi.getTitle()+"'");
+			}
+			for(ClientDisplayerInterface c:this.clients) {
+				if(!c.getClient().equals(ci)&&dsi.isConnected(c.getClient())&&
+						c.isOpenedDiscussion(dsi)) {
+					c.leftUser(ci,dsi);
+				}
 			}
 		}
 		else {
@@ -241,11 +251,47 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 		}
 		return unsubscribed;
 	}
+	
+	@Override
+	public synchronized boolean askNewOwner(DiscussionSubjectInterface dsi) throws RemoteException {
+		boolean changed=false;
+		for(ClientInterface ci:dsi.getClients()) {
+			if(dsi.getOwner()!=null&&dsi.getOwner().getClient().equals(ci)) {
+				continue;
+			}
+			ClientDisplayerInterface cdi=this.getClientController(ci);
+			changed=cdi.askNewOwner(dsi);
+			if(changed) {
+				dsi.setOwner(cdi);
+				break;
+			}
+		}
+		if(!changed) {
+			dsi.setOwner(null);
+		}
+		for(ClientDisplayerInterface c:this.clients) {
+			if(dsi.isConnected(c.getClient())&&c.isOpenedDiscussion(dsi)) {
+				c.changeOwner(dsi);
+			}
+		}
+		return changed;
+	}
+
+	@Override
+	public synchronized ClientDisplayerInterface getClientController(ClientInterface ci)
+			throws RemoteException {
+		for(ClientDisplayerInterface cdi:this.clients) {
+			if(cdi.getClient().equals(ci)) {
+				return cdi;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public synchronized DiscussionSubjectInterface getSubjectFromName(String title)
 			throws RemoteException {
-		for(DiscussionSubjectInterface dsi:this.discussionSubjects.keySet()) {
+		for(DiscussionSubjectInterface dsi:this.discussionSubjects) {
 			if(dsi.getTitle().equalsIgnoreCase(title)) {
 				return dsi;
 			}
@@ -271,7 +317,7 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 		if(!this.clients.contains(client)) {
 			return false;
 		}
-		for(DiscussionSubjectInterface dsi:this.discussionSubjects.keySet()) {
+		for(DiscussionSubjectInterface dsi:this.discussionSubjects) {
 			if(dsi.isConnected(client.getClient())) {
 				this.unsubscribe(dsi, client, true);
 			}
@@ -312,13 +358,13 @@ public class ServerForum extends UnicastRemoteObject implements ServerForumInter
 
 	@Override
 	public synchronized String getList() throws RemoteException {
-		return Arrays.toString(this.discussionSubjects.keySet().toArray());
+		return Arrays.toString(this.discussionSubjects.toArray());
 	}
 
 	@Override
 	public synchronized String toString() {
 		return "ServerForum [discussionSubjects=" +
-				Arrays.toString(this.discussionSubjects.keySet().toArray())
+				Arrays.toString(this.discussionSubjects.toArray())
 				+ "]";
 	}
 }

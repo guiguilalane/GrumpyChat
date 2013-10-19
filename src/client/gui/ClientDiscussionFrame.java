@@ -49,6 +49,8 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 
 	private DiscussionSubjectInterface discussion;
 	private ClientDisplayerInterface client;
+	private boolean onLine=true;
+	private boolean closed=false;
 
 	private JLabel label=new JLabel("Infos");
 	private JLabel ownerInfos=new JLabel("Owner");
@@ -56,6 +58,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 	private StyledDocument style=this.log.getStyledDocument();
 	private JScrollPane logScroll;
 	private JScrollPane messageScroll;
+	private JPanel topPanel=new JPanel();
 	private JTextArea messageContent=new JTextArea();
 	private JButton removeButton=new JButton("Remove channel");
 	private JButton sendButton=new JButton("Send");
@@ -72,6 +75,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
     private Map<ClientInterface,Style> allStyles=new HashMap<ClientInterface,Style>();
     
     private int COLOR_INDEX=0;
+
     private static final Color[] COLORS={Color.decode("#0000FF"),
     	Color.decode("#8A2BE2"),
     	Color.decode("#A52A2A"),
@@ -211,22 +215,22 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 				}
 			});
 
-		JPanel topPanel=new JPanel();
-		topPanel.setPreferredSize(new Dimension(frameWidth-20,35));
-		topPanel.setMaximumSize(new Dimension(frameWidth-20,35));
-		topPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		this.topPanel.setPreferredSize(new Dimension(frameWidth-20,35));
+		this.topPanel.setMaximumSize(new Dimension(frameWidth-20,35));
+		this.topPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		this.label.setText("Discussion "+title+": "+users+" users");
 		this.label.setPreferredSize(new Dimension(frameWidth-240,15));
 		this.label.setMaximumSize(new Dimension(frameWidth-240,15));
 		this.ownerInfos.setText("Owner: "+owner);
-		topPanel.add(this.label);
+		this.topPanel.add(this.label);
+		this.removeButton.addActionListener(this);
+		this.removeButton.setToolTipText("Remove this channel");
 		try {
 			if(this.client.getServer().isChannelOwner(this.client, title)) {
-				topPanel.add(this.removeButton);
-				this.removeButton.addActionListener(this);
+				this.topPanel.add(this.removeButton);
 			}
 			else {
-				topPanel.add(this.ownerInfos);
+				this.topPanel.add(this.ownerInfos);
 			}
 		} catch (RemoteException e) {
 			System.err.println("Can not add the remove button");
@@ -248,10 +252,15 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		buttonPanel.add(this.clearButton);
 		buttonPanel.add(this.quitButton);
 		this.sendButton.addActionListener(this);
+		this.sendButton.setToolTipText("Send your message");
 		this.resetButton.addActionListener(this);
+		this.resetButton.setToolTipText("Clear your current message");
 		this.clearButton.addActionListener(this);
+		this.clearButton.setToolTipText("Clear the current discussion");
 		this.copyButton.addActionListener(this);
+		this.copyButton.setToolTipText("Copy the current discussion");
 		this.quitButton.addActionListener(this);
+		this.quitButton.setToolTipText("Leave the channel");
 		
 		JPanel bottomPanel=new JPanel();
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -264,7 +273,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		bottomPanel.add(this.messageScroll);
 		bottomPanel.add(buttonPanel);
 		
-		this.getContentPane().add(topPanel,BorderLayout.NORTH);
+		this.getContentPane().add(this.topPanel,BorderLayout.NORTH);
 		this.getContentPane().add(this.logScroll,BorderLayout.CENTER);
 		this.getContentPane().add(bottomPanel,BorderLayout.SOUTH);
 		this.setVisible(true);
@@ -281,6 +290,12 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		}
 		
 		this.info("You are now connected to '"+title+"' channel");
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		this.closed=true;
 	}
 	
 	@Override
@@ -314,33 +329,56 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 				JOptionPane.WARNING_MESSAGE)==0;
 	}
 	
-	public void close() {
+	public synchronized void close(boolean remove) {
 		try {
+			if(this.discussion.getOwner()!=null&&
+					this.discussion.getOwner().getClient().equals(this.client.getClient())) {
+				this.setVisible(false);
+				this.client.serverAskNewOwner(this.discussion);
+			}
 			if(this.discussion.isConnected(this.client.getClient())) {
 				this.client.getServer().unsubscribe(this.discussion, this.client);
 			}
-			if(this.client.isOpenedDiscussion(this.discussion)) {
+			if(remove) {
 				this.client.closeDiscussion(this.discussion);
 			}
+			this.setVisible(false);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		this.dispose();
+	}
+	
+	public synchronized void close() {
+		this.close(true);
 	}
 	
 	/**
 	 * Close the frame after inform the client of this closing
 	 */
 	public void closeFrame() {
+		if(this.closed) {
+			return;
+		}
 		try {
 			this.client.display("The channel '"+
 					this.discussion.getTitle()+"' has been removed", this);
+			this.close();
 		} catch (HeadlessException e) {
 			e.printStackTrace();
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		this.close();
+	}
+	
+	/**
+	 * Ask for a new discussion owner
+	 * @return 
+	 */
+	public boolean askNewOwner() {
+		return JOptionPane.showConfirmDialog(this, "The old channel ower " +
+				"left this channel, do you want to be the new owner?",
+				"Become the new BOSS? \\o/",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)==0;
 	}
 
 	public void print(String message) {
@@ -382,6 +420,38 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 			e1.printStackTrace();
 		}
 		this.label.setText("Discussion "+title+": "+users+" users");
+		this.repaint();
+	}
+
+	public void leftUser(ClientInterface client) {
+		String title="error";
+		Integer users=0;
+		try {
+			title=this.discussion.getTitle();
+			users=this.discussion.getClients().size()-1;
+			this.info(client.getPseudo()+" is has left on the channel");
+			this.allStyles.put(client, this.newStyle(client));
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}
+		this.label.setText("Discussion "+title+": "+users+" users");
+		this.repaint();
+	}
+	
+	public void changeOwner() {
+		try {
+			String owner = this.client.getServer().getOwner(this.discussion);
+			if(this.client.getClient().getPseudo().equalsIgnoreCase(owner)) {
+				this.topPanel.removeAll();
+				this.topPanel.add(this.label);
+				this.topPanel.add(this.removeButton);
+			}
+			else {
+				this.ownerInfos.setText("Owner: "+owner);
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 		this.repaint();
 	}
 	
@@ -436,8 +506,15 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		this.log.setCaretPosition(this.style.getLength());
 	}
 
+	public void setInactive() {
+		this.onLine=false;
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent event) {
+		if(!this.onLine) {
+			this.closeFrame();
+		}
 		if(event.getSource().equals(this.quitButton)) {
 			if(this.askQuit()) {
 				this.close();
@@ -478,8 +555,8 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 						this.client.display("The channel '"+this.discussion.getTitle()+
 								"' has been correctly removed", true);
 						this.setVisible(false);
-						this.client.getServer().closeFrames(this.client,this.discussion);
 						this.close();
+						this.client.getServer().closeFrames(this.client,this.discussion);
 					}
 					else {
 						this.client.error("The channel '"+this.discussion.getTitle()+

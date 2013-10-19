@@ -37,7 +37,7 @@ public class ClientMain {
 	 * @param cd {@link ClientDisplayer} - The client displayer
 	 * @throws RemoteException
 	 */
-	@SuppressWarnings("resource")
+//	@SuppressWarnings("resource")
 	public void start(ClientDisplayerInterface cd) throws RemoteException {
 
 		if(cd==null) {

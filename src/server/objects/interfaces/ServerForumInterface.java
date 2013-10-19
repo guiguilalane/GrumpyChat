@@ -102,6 +102,16 @@ public interface ServerForumInterface extends Remote {
 	 */
 	public boolean newUser(ClientDisplayerInterface client) 
 			throws RemoteException;
+	
+	/**
+	 * Return the {@link ClientDisplayerInterface client controller} of a specific
+	 * {@link ClientInterface client}
+	 * @param ci {@link ClientInterface} - The client to find
+	 * @return {@link ClientDisplayerInterface} - The client controller
+	 * @throws RemoteException
+	 */
+	public ClientDisplayerInterface getClientController(ClientInterface ci)
+				throws RemoteException;
 
 	/**
 	 * Remove an user from the {@link server.objects.ServerForum#clients connected users list}
@@ -198,7 +208,7 @@ public interface ServerForumInterface extends Remote {
 	 * @param client {@link ClientDisplayerInterface} - The controller source
 	 * @throws RemoteException
 	 */
-	void broadCastUpdateFrame(ClientDisplayerInterface client)
+	public void broadCastUpdateFrame(ClientDisplayerInterface client)
 			throws RemoteException;
 
 	/**
@@ -216,5 +226,14 @@ public interface ServerForumInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public String getOwner(DiscussionSubjectInterface discussion) throws RemoteException;
+
+	/**
+	 * Ask to use to become the new discussion owner
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to ask
+	 * @return {@link Boolean boolean} - <code>true</code> if a client confirmed,
+	 * <code>false</code> otherwise
+	 * @throws RemoteException
+	 */
+	public boolean askNewOwner(DiscussionSubjectInterface dsi) throws RemoteException;
 
 }

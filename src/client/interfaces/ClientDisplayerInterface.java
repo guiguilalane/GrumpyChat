@@ -136,12 +136,22 @@ public interface ClientDisplayerInterface extends Remote {
 			throws RemoteException;
 	
 	/**
-	 * Add an user in a specific channel 
+	 * Add an user in a specific channel
 	 * @param ci {@link ClientInterface} - The client to add
 	 * @param dsi {@link DiscussionSubjectInterface} - The channel in which to add the client
+	 * @throws RemoteException 
 	 */
 	public void newUser(ClientInterface ci,
 			DiscussionSubjectInterface dsi) throws RemoteException;
+
+	/**
+	 * Remove an user in specific channel
+	 * @param ci {@link ClientInterface} - The client to remove
+	 * @param dsi {@link DiscussionSubjectInterface} - The channel in which to remove the client
+	 * @throws RemoteException
+	 */
+	public void leftUser(ClientInterface ci, DiscussionSubjectInterface dsi)
+			throws RemoteException;
 	
 	/**
 	 * Update the channel buttons list from given channels list
@@ -152,16 +162,58 @@ public interface ClientDisplayerInterface extends Remote {
 
 	/**
 	 * Close the discussion frame for specific discussion
-	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to clos its frame
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to close its frame
 	 * @throws RemoteException
 	 */
 	public void closeDiscussionFrame(DiscussionSubjectInterface dsi) throws RemoteException;
 
+	/**
+	 * Dispose the frame for specific discussion
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to close its frame
+	 * @throws RemoteException
+	 */
+	public void disposeDiscussionFrame(DiscussionSubjectInterface dsi)
+			throws RemoteException;
+
+	/**
+	 * Disable the discussion frame
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to disable
+	 * @throws RemoteException
+	 */
+	public void setInactiveDiscussion(DiscussionSubjectInterface dsi)
+			throws RemoteException;
+	
 	/**
 	 * Close the discussion and remove it from list of opened discussion
 	 * @param dsi {@link DiscussionSubjectInterface} - The discussion to close
 	 * @throws RemoteException 
 	 */
 	public void closeDiscussion(DiscussionSubjectInterface dsi) throws RemoteException;
+
+	/**
+	 * Ask new discussion owner
+	 * @param dsi {@link DiscussionSubjectInterface} - The discussion
+	 * @return {@link Boolean boolean} - <code>true</code> if the client accepted,
+	 * <code>false</code> otherwise
+	 * @throws RemoteException 
+	 */
+	public boolean askNewOwner(DiscussionSubjectInterface dsi) throws RemoteException;
+
+	/**
+	 * Change the owner name of the discussion
+	 * @param cdf {@link DiscussionSubjectInterface} - The discussion where its frame
+	 * must update the owner name
+	 * @throws RemoteException 
+	 */
+	public void changeOwner(DiscussionSubjectInterface cdf) throws RemoteException;
+
+	/**
+	 * Ask on server to all client connected on specific discussion if they want to be the 
+	 * new discussion owner
+	 * @param discussion {@link DiscussionSubjectInterface} - The discussion to ask
+	 * @throws RemoteException 
+	 */
+	public void serverAskNewOwner(DiscussionSubjectInterface discussion)
+			throws RemoteException;
 
 }

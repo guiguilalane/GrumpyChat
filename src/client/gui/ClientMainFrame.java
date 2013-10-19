@@ -145,6 +145,13 @@ public class ClientMainFrame extends JFrame implements ActionListener, Component
 		this.setVisible(true);
 		this.addComponentListener(this);
 	}
+	
+	@Override
+	public void pack() {
+		this.setPreferredSize(this.getSize());
+		this.subjectsPanel.setScrollWidth(this.getWidth());
+		super.pack();
+	}
 
 	/**
 	 * Constructor with the client displayer
@@ -204,9 +211,7 @@ public class ClientMainFrame extends JFrame implements ActionListener, Component
 		for(DiscussionSubjectInterface dsi:list) {
 			this.subjectsPanel.addDiscussionSubject(this.cd,dsi);
 		}
-		if(!this.subjectsPanel.isPositioned()) {
-			this.subjectsPanel.updatePanel();
-		}
+		this.subjectsPanel.updatePanel();
 		this.pack();
 	}
 

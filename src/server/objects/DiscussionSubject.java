@@ -7,6 +7,7 @@ import java.util.List;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
+import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
 
 /**
@@ -36,14 +37,21 @@ public class DiscussionSubject extends UnicastRemoteObject
 	 * The list of message in current discussion
 	 */
 	private List<MessageInterface> messages=new ArrayList<MessageInterface>();
+	/**
+	 * The discussion owner
+	 */
+	private ClientDisplayerInterface owner=null;
 	
 	/**
 	 * Constructor with the discussion title
 	 * @param title {@link String} - The discussion title
+	 * @param owner {@link ClientDisplayerInterface} - The discussion owner controller
 	 * @throws RemoteException
 	 */
-	public DiscussionSubject(String title) throws RemoteException {
+	public DiscussionSubject(String title, ClientDisplayerInterface owner)
+			throws RemoteException {
 		this.title=title;
+		this.owner=owner;
 	}
 	
 	@Override
@@ -59,6 +67,17 @@ public class DiscussionSubject extends UnicastRemoteObject
 	@Override
 	public List<MessageInterface> getMessages() throws RemoteException {
 		return messages;
+	}
+	
+	@Override
+	public ClientDisplayerInterface getOwner() throws RemoteException {
+		return this.owner;
+	}
+	
+	@Override
+	public void setOwner(ClientDisplayerInterface owner)
+			throws RemoteException {
+		this.owner=owner;
 	}
 	
 	@Override

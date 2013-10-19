@@ -7,6 +7,8 @@ import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.rmi.RemoteException;
 
 import javax.swing.JButton;
@@ -21,7 +23,7 @@ import client.interfaces.ClientDisplayerInterface;
  * A {@link JPanel} to store all discussions inside
  * @author Grumpy Group
  */
-public class DiscussionSubjectMenu extends JPanel implements ActionListener {
+public class DiscussionSubjectMenu extends JPanel implements ActionListener, AdjustmentListener {
 
 	/**
 	 * Generated serialVersionUID
@@ -34,11 +36,8 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 	private JButton next=new JButton((char)9658+"");
 	private JPanel subjectsPanel=new JPanel();
 	private JScrollPane subjectsScroll;
+	private int scrollPos=0;;
 	private int scrollWidth=350;
-	/**
-	 * It sets if the channel panel is correctly positioned
-	 */
-	private boolean positioned=false;
 
 	/**
 	 * Construct a new instance of a SubjectMenu
@@ -54,6 +53,7 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 		this.subjectsScroll.setPreferredSize(new Dimension(this.scrollWidth,25));
 		this.subjectsScroll.setBorder(null);
 		this.subjectsScroll.getHorizontalScrollBar().setPreferredSize(new Dimension(0,0));
+		this.subjectsScroll.getHorizontalScrollBar().addAdjustmentListener(this);
 		
 		this.createChannel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		this.label.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -62,9 +62,18 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 		this.add(this.previous);
 		this.add(this.subjectsScroll);
 		this.add(this.next);
+		this.next.setToolTipText("Display next channels");
+		this.previous.setToolTipText("Display previous channels");
 
 		this.previous.addActionListener(this);
+		this.previous.setEnabled(false);
 		this.next.addActionListener(this);
+	}
+	
+	@Override
+	public void revalidate() {
+		super.revalidate();
+		this.computeSizes();
 	}
 	
 	public void reset() {
@@ -74,14 +83,10 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 	}
 
 	public void updatePanel() {
-		if(this.positioned) {
-			return;
-		}
 		Point currentPos=this.subjectsScroll.getViewport().getViewPosition();
-		this.subjectsScroll.getViewport().setViewPosition(new Point(currentPos.x,currentPos.y+6));
+		this.subjectsScroll.getViewport().setViewPosition(new Point(currentPos.x,6));
 		this.subjectsPanel.repaint();
-		this.positioned=true;
-		
+		currentPos=this.subjectsScroll.getViewport().getViewPosition();
 	}
 	
 	public void setScrollWidth(int width) {
@@ -109,9 +114,7 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 					boolean connected=subject.isConnected(client.getClient());
 					if(connected||client.getServer().subscribe(subject, client)) {
 						if(client.isOpenedDiscussion(subject)) {
-							if(!client.getDiscussionFrame(subject).isVisible()) {
-								client.getDiscussionFrame(subject).setVisible(true);
-							}
+							client.getDiscussionFrame(subject).setVisible(true);
 						}
 						else {
 							client.openDiscussion(new ClientDiscussionFrame(client, subject));	
@@ -128,7 +131,9 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 			}
 		});
 		try {
-			dsButton.setText(subject.getTitle());
+			String title=subject.getTitle();
+			dsButton.setText(title);
+			dsButton.setToolTipText("Subscribe to '"+title+"' channel");
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -164,25 +169,82 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener {
 	public JButton getCreateChannel() {
 		return this.createChannel;
 	}
+	
+	private void scrollPrevious(int size) {
+		this.scrollTo(-size);
+	}
+	
+	private void scrollNext(int size) {
+		this.scrollTo(size);
+	}
+	
+	private void computeSizes() {
+		try {
+			this.next.setEnabled(false);
+			this.previous.setEnabled(false);
+			if(this.subjectsPanel.getPreferredSize().getWidth()>=this.scrollWidth) {
+				Point currentPos=this.subjectsScroll.getViewport().getViewPosition();
+				int maxWidth=(int) (this.subjectsPanel.getPreferredSize().getWidth()-
+						this.scrollWidth);
+				if(currentPos.x>0) {
+					this.previous.setEnabled(true);
+				}
+				if(currentPos.x<maxWidth) {
+					this.next.setEnabled(true);
+				}
+			}
+		} catch (NullPointerException e) {
+		}
+	}
+	
+	private void scrollTo(int size) {
+		int maxWidth=this.subjectsPanel.getWidth()-this.scrollWidth;
+		if(maxWidth<=0) {
+			this.computeSizes();
+			return;
+		}
+		Point currentPos=this.subjectsScroll.getViewport().getViewPosition();
+		int newPos=currentPos.x+size;
+		newPos=newPos>maxWidth?maxWidth:newPos;
+		newPos=newPos<=0?0:newPos;
+		if(newPos==maxWidth) {
+			this.next.setEnabled(false);
+		}
+		else if(newPos==0) {
+			this.previous.setEnabled(false);
+		}
+		if(size>0) {
+			this.previous.setEnabled(true);
+		}
+		else if(size<0) {
+			this.next.setEnabled(true);
+		}
+		this.scrollPos=newPos;
+		this.subjectsScroll.getViewport().setViewPosition(new Point(newPos,currentPos.y));
+		this.subjectsPanel.revalidate();
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		if(event.getSource().equals(this.previous)) {
-			Point currentPos=this.subjectsScroll.getViewport().getViewPosition();
-			int newPos=currentPos.x-100;
-			newPos=newPos<=0?0:newPos;
-			this.subjectsScroll.getViewport().setViewPosition(new Point(newPos,currentPos.y));
-			this.subjectsPanel.repaint();
+			this.scrollPrevious(50);
 		}
 		else if(event.getSource().equals(this.next)) {
-			Point currentPos=this.subjectsScroll.getViewport().getViewPosition();
-			this.subjectsScroll.getViewport().setViewPosition(new Point(currentPos.x+100,currentPos.y));
-			this.subjectsPanel.repaint();
+			this.scrollNext(50);
 		}
 	}
 
-	public boolean isPositioned() {
-		return this.positioned;
+	@Override
+	public void adjustmentValueChanged(AdjustmentEvent event) {
+		if(event.getSource().equals(this.subjectsScroll.getHorizontalScrollBar())) {
+			Point currentPos=this.subjectsScroll.getViewport().getViewPosition();
+			if(currentPos.x>this.scrollPos) {
+				this.scrollNext(10);
+			}
+			else if(currentPos.x<this.scrollPos) {
+				this.scrollPrevious(10);
+			}
+		}
 	}
 	
 }
