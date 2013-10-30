@@ -390,7 +390,8 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 	
 	/**
 	 * Ask for a new discussion owner
-	 * @return 
+	 * @return {@link Boolean boolean} - <code>true</code> if the user said <code>yes</code>
+	 * to become the new discussion owner, <code>false</code> otherwise
 	 */
 	public boolean askNewOwner() {
 		return JOptionPane.showConfirmDialog(this, "The old channel ower " +

@@ -50,7 +50,7 @@ public interface ClientDisplayerInterface extends Remote {
 	/**
 	 * Display the message in frame from a parent frame
 	 * @param message {@link String} - The message to display
-	 * @param clientDiscussionFrame {@link JFrame} - The parent frame
+	 * @param parent {@link JFrame} - The parent frame
 	 * @throws RemoteException
 	 */
 	public void display(String message, JFrame parent) throws RemoteException;

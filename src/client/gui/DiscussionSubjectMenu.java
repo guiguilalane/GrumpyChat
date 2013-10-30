@@ -100,7 +100,10 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener, Adj
 
 	/**
 	 * Add a new discussion subject to the current menu.
-	 * @param subjectName
+	 * @param client {@link ClientDisplayerInterface} - The client controller to
+	 * add the discussion subject
+	 * @param subject {@link DiscussionSubjectInterface} - The discussion subject
+	 * to add
 	 */
 	public void addDiscussionSubject(final ClientDisplayerInterface client,
 			final DiscussionSubjectInterface subject) {
