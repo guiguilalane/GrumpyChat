@@ -16,6 +16,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -166,7 +167,7 @@ public class ClientMainFrame extends JFrame implements ActionListener, Component
 		try {
 			this.cd.exit();
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.exit(0);
 		}
 		this.dispose();
 	}
@@ -181,7 +182,7 @@ public class ClientMainFrame extends JFrame implements ActionListener, Component
 	 * Display the server log in the client side
 	 * @param message {@link String} - The message to display
 	 */
-	public void displayLog(String message) {
+	public synchronized void displayLog(String message) {
 		try {
 			this.style.insertString(this.style.getLength(), message+"\n", this.normalStyle);
 		} catch (BadLocationException e) {
@@ -194,7 +195,7 @@ public class ClientMainFrame extends JFrame implements ActionListener, Component
 	 * Display the server error log in the client side
 	 * @param message {@link String} - The error to display
 	 */
-	public void displayError(String message) {
+	public synchronized void displayError(String message) {
 		try {
 			this.style.insertString(this.style.getLength(), message+"\n", this.errorStyle);
 		} catch (BadLocationException e) {
@@ -304,6 +305,7 @@ public class ClientMainFrame extends JFrame implements ActionListener, Component
 					this.cd.error("The channel '"+subject+"' can not be created",
 							true);
 				}
+			} catch (ConnectException e) {
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}

@@ -6,6 +6,9 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -76,23 +79,24 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
     
     private int COLOR_INDEX=0;
 
-    private static final Color[] COLORS={Color.decode("#0000FF"),
+    private static final Color[] COLORS={
+    	Color.decode("#9932CC"),
+    	Color.decode("#006400"),
     	Color.decode("#8A2BE2"),
     	Color.decode("#A52A2A"),
     	Color.decode("#5F9EA0"),
     	Color.decode("#D2691E"),
-    	Color.decode("#FF7F50"),
     	Color.decode("#6495ED"),
     	Color.decode("#DC143C"),
     	Color.decode("#00008B"),
     	Color.decode("#008B8B"),
     	Color.decode("#B8860B"),
     	Color.decode("#B2B2B2"),
-    	Color.decode("#006400"),
+    	Color.decode("#0000FF"),
     	Color.decode("#8B008B"),
     	Color.decode("#556B2F"),
     	Color.decode("#FF8C00"),
-    	Color.decode("#9932CC"),
+    	Color.decode("#FF7F50"),
     	Color.decode("#8B0000"),
     	Color.decode("#483D8B"),
     	Color.decode("#2F4F4F"),
@@ -329,26 +333,40 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 				JOptionPane.WARNING_MESSAGE)==0;
 	}
 	
-	public synchronized void close(boolean remove) {
+	public void close(boolean remove) {
 		try {
+			System.err.println("Debug1");
 			if(this.discussion.getOwner()!=null&&
 					this.discussion.getOwner().getClient().equals(this.client.getClient())) {
+				System.err.println("Debug2");
 				this.setVisible(false);
+				System.err.println("Debug3");
 				this.client.serverAskNewOwner(this.discussion);
+				System.err.println("Debug4");
 			}
-			if(this.discussion.isConnected(this.client.getClient())) {
+			System.err.println("Debug5");
+			if(this.discussion.isConnected(this.client)) {
+				System.err.println("Debug6");
 				this.client.getServer().unsubscribe(this.discussion, this.client);
+				System.err.println("Debug7");
 			}
+			System.err.println("Debug8");
 			if(remove) {
+				System.err.println("Debug9");
 				this.client.closeDiscussion(this.discussion);
+				System.err.println("Debug10");
 			}
+			System.err.println("Debug11");
 			this.setVisible(false);
+			System.err.println("Debug12");
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Connection seems to be lost",
+					"Connection error! x)",JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
 		}
 	}
 	
-	public synchronized void close() {
+	public void close() {
 		this.close(true);
 	}
 	
@@ -396,7 +414,9 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 	private Style newStyle(ClientInterface client) {
 	    Style s = null;
 		try {
-			s = this.log.addStyle(client.getPseudo()+"Style", null);
+			synchronized (this.log) {
+				s = this.log.addStyle(client.getPseudo()+"Style", null);
+			}
 		    StyleConstants.setForeground(s,
 		    		ClientDiscussionFrame.COLORS[this.COLOR_INDEX++%
 		    		                             ClientDiscussionFrame.COLORS.length]);
@@ -415,7 +435,9 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 			title=this.discussion.getTitle();
 			users=this.discussion.getClients().size()-1;
 			this.info(client.getPseudo()+" is now connected on the channel");
-			this.allStyles.put(client, this.newStyle(client));
+			synchronized (this.allStyles) {
+				this.allStyles.put(client, this.newStyle(client));
+			}
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}
@@ -429,8 +451,10 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		try {
 			title=this.discussion.getTitle();
 			users=this.discussion.getClients().size()-1;
-			this.info(client.getPseudo()+" is has left on the channel");
-			this.allStyles.put(client, this.newStyle(client));
+			this.info(client.getPseudo()+" has left the channel");
+			synchronized (this.allStyles) {
+				this.allStyles.put(client, this.newStyle(client));
+			}
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}
@@ -452,10 +476,11 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+		this.onLine=true;
 		this.repaint();
 	}
 	
-	public void displayMessage(MessageInterface message) {
+	public synchronized void displayMessage(MessageInterface message) {
 		try {
 			boolean me=message.getClient().equals(this.client.getClient());
 			boolean server=message.getClient().equals(ServerForumInterface.CLIENT);
@@ -468,12 +493,14 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		    	s=this.serverStyle;
 		    }
 		    else if(!me) {
-		    	if(!this.allStyles.containsKey(message.getClient())) {
-		    		s=this.newStyle(message.getClient());
-		    		this.allStyles.put(message.getClient(), s);
-		    	}
-		    	else {
-		    		s=this.allStyles.get(message.getClient());
+		    	synchronized (this.allStyles) {
+			    	if(!this.allStyles.containsKey(message.getClient())) {
+			    		s=this.newStyle(message.getClient());
+			    		this.allStyles.put(message.getClient(), s);
+			    	}
+			    	else {
+			    		s=this.allStyles.get(message.getClient());
+			    	}
 		    	}
 		    }
 			this.style.insertString(this.style.getLength(),
@@ -497,7 +524,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 		this.log.setCaretPosition(this.style.getLength());
 	}
 	
-	public void write(String message, Style style) {
+	public synchronized void write(String message, Style style) {
 		try {
 			this.style.insertString(this.style.getLength(), message+"\n", style);
 		} catch (BadLocationException e) {
@@ -512,13 +539,33 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		if(!this.onLine) {
-			this.closeFrame();
+		if(!this.onLine&&(event.getSource().equals(this.quitButton)||
+				event.getSource().equals(this.sendButton))) {
+			JOptionPane.showMessageDialog(this, "The discussion is not available at the moment. " +
+					"Please try again later", "Discussion busy! :@",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+//			this.closeFrame();
 		}
 		if(event.getSource().equals(this.quitButton)) {
 			if(this.askQuit()) {
 				this.close();
 			}
+		}
+		else if(event.getSource().equals(this.copyButton)) {
+			synchronized (this.log) {
+				StringSelection selection=new StringSelection(this.log.getText());
+				Clipboard clipboard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
+				clipboard.setContents(selection, null);
+			}
+		}
+		else if(event.getSource().equals(this.clearButton)) {
+			synchronized (this.log) {
+				this.log.setText("");
+			}
+		}
+		else if(event.getSource().equals(this.resetButton)) {
+			this.messageContent.setText("");
 		}
 		else if(event.getSource().equals(this.sendButton)) {
 			String message=this.messageContent.getText();
@@ -536,7 +583,11 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener {
 				MessageInterface msg=new Message(this.client.getClient(), message);
 				this.client.getServer().addMessage(this.client,this.discussion,msg);
 			} catch (RemoteException e) {
-				System.err.println("Can not send the message");
+				try {
+					this.client.error("The message can't be sent (Connection error?)", true);
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		}
 		else if(event.getSource().equals(this.removeButton)) {

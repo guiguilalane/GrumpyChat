@@ -24,7 +24,7 @@ public interface DiscussionSubjectInterface extends Remote {
 	 * @return {@link List}<{@link ClientInterface}> - The clients list
 	 * @throws RemoteException
 	 */
-	public List<ClientInterface> getClients() throws RemoteException;
+	public List<ClientDisplayerInterface> getClients() throws RemoteException;
 	
 	/**
 	 * Return the discussion client owner of this one
@@ -42,31 +42,31 @@ public interface DiscussionSubjectInterface extends Remote {
 	
 	/**
 	 * Return true if the client in parameter is connected on this discussion
-	 * @param client {@link ClientInterface} - The client to search in the registered clients list
+	 * @param client {@link ClientDisplayerInterface} - The client to search in the registered clients list
 	 * @return {@link Boolean boolean} - <code>true</code> if the client is registered on this
 	 * discussion, <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
-	public boolean isConnected(ClientInterface client) throws RemoteException;
+	public boolean isConnected(ClientDisplayerInterface client) throws RemoteException;
 	
 	/**
-	 * Subscribe a {@link ClientInterface Client} to a discussion subject
-	 * @param client {@link ClientInterface} - The client to register in this discussion
+	 * Subscribe a {@link ClientDisplayerInterface Client} to a discussion subject
+	 * @param client {@link ClientDisplayerInterface} - The client to register in this discussion
 	 * @return {@link Boolean boolean} - <code>true</code> if client has been correctly added,
 	 * <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
-	public boolean subscribe(ClientInterface client)
+	public boolean subscribe(ClientDisplayerInterface client)
 		throws RemoteException;
 	
 	/**
-	 * Unsubscribe a {@link ClientInterface Client} to a discussion subject
-	 * @param client {@link ClientInterface} - The client to unregister in this discussion
+	 * Unsubscribe a {@link ClientDisplayerInterface Client} to a discussion subject
+	 * @param client {@link ClientDisplayerInterface} - The client to unregister in this discussion
 	 * @return {@link Boolean boolean} - <code>true</code> if the client has been correctly removed,
 	 * <code>false</code> otherwise
 	 * @throws RemoteException
 	 */
-	public boolean unsubscribe(ClientInterface client)
+	public boolean unsubscribe(ClientDisplayerInterface client)
 		throws RemoteException;
 
 	/**
@@ -107,11 +107,12 @@ public interface DiscussionSubjectInterface extends Remote {
 	 */
 	public boolean addMessage(MessageInterface message) throws RemoteException;
 	
-//	/**
-//	 * Diffuse the message to all DisplayerClient which subscribe to a subject
-//	 * @param message The message to display
-//	 * @throws RemoteException
-//	 */
-//	public void diffuse(String message)
-//		throws RemoteException;
+	/**
+	 * Diffuse the message to all {@link ClientDisplayerInterface clients} who
+	 * subscribed to a subject
+	 * @param message {@link MessageInterface} - The message to display
+	 * @throws RemoteException
+	 */
+	public void diffuse(MessageInterface message)
+		throws RemoteException;
 }

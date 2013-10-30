@@ -22,7 +22,7 @@ public class DiscussionSubject extends UnicastRemoteObject
 	 */
 	private static final long serialVersionUID = -7970496351612327779L;
 	/**
-	 * The maximum of sulmutaneously connected clients;
+	 * The maximum of simultaneously connected clients;
 	 */
 	private int maxClients=10;
 	/**
@@ -32,7 +32,7 @@ public class DiscussionSubject extends UnicastRemoteObject
 	/**
 	 * The list of registered clients
 	 */
-	private List<ClientInterface> clients=new ArrayList<ClientInterface>();
+	private List<ClientDisplayerInterface> clients=new ArrayList<ClientDisplayerInterface>();
 	/**
 	 * The list of message in current discussion
 	 */
@@ -60,7 +60,7 @@ public class DiscussionSubject extends UnicastRemoteObject
 	}
 
 	@Override
-	public List<ClientInterface> getClients() throws RemoteException {
+	public List<ClientDisplayerInterface> getClients() throws RemoteException {
 		return this.clients;
 	}
 
@@ -80,9 +80,19 @@ public class DiscussionSubject extends UnicastRemoteObject
 		this.owner=owner;
 	}
 	
+	private boolean containsClient(ClientInterface client)
+			throws RemoteException {
+		for(ClientDisplayerInterface cdi:this.clients) {
+			if(cdi.getClient().equals(client)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public boolean addMessage(MessageInterface message) throws RemoteException {
-		if(this.clients.contains(message.getClient())||
+		if(this.containsClient(message.getClient())||
 				message.getClient().equals(ServerForum.CLIENT))
 		{
 			this.messages.add(message);
@@ -102,7 +112,7 @@ public class DiscussionSubject extends UnicastRemoteObject
 	}
 
 	@Override
-	public boolean subscribe(ClientInterface client) throws RemoteException {
+	public boolean subscribe(ClientDisplayerInterface client) throws RemoteException {
 		if(!this.clients.contains(client)&&this.clients.size()<this.maxClients) {
 			return this.clients.add(client);
 		}
@@ -110,15 +120,18 @@ public class DiscussionSubject extends UnicastRemoteObject
 	}
 
 	@Override
-	public boolean unsubscribe(ClientInterface client)
+	public boolean unsubscribe(ClientDisplayerInterface client)
 			throws RemoteException {
 		return this.clients.remove(client);
 	}
 	
-//	@Override
-//	public void diffuse(String message) throws RemoteException {
-//		// TODO Auto-generated method stub
-//	}
+	@Override
+	public void diffuse(MessageInterface message)
+			throws RemoteException {
+//		for(ClientDisplayerInterface cdi:this.clients) {
+//			cdi.getMessage(message, this);
+//		}
+	}
 	
 	@Override
 	public String getList() throws RemoteException {
@@ -126,7 +139,7 @@ public class DiscussionSubject extends UnicastRemoteObject
 	}
 	
 	@Override
-	public boolean isConnected(ClientInterface client) throws RemoteException {
+	public boolean isConnected(ClientDisplayerInterface client) throws RemoteException {
 		return this.clients.contains(client);
 	}
 	

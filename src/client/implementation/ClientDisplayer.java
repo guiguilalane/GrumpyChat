@@ -79,7 +79,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized void newUser(ClientInterface client,
+	public void newUser(ClientInterface client,
 			DiscussionSubjectInterface dsi) throws RemoteException {
 		for(ClientDiscussionFrame cdf:this.openedDiscussion) {
 			if(cdf.getDiscussion().equals(dsi)) {
@@ -90,7 +90,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized void leftUser(ClientInterface client,
+	public void leftUser(ClientInterface client,
 			DiscussionSubjectInterface dsi) throws RemoteException {
 		for(ClientDiscussionFrame cdf:this.openedDiscussion) {
 			if(cdf.getDiscussion().equals(dsi)) {
@@ -117,7 +117,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized void exit() throws RemoteException {
+	public void exit() throws RemoteException {
 		this.server.disconnectUser(this);
 		this.display("See you later dude!", true);
 		this.getMainFrame().setVisible(false);
@@ -134,7 +134,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized void closeDiscussionFrame(DiscussionSubjectInterface dsi)
+	public void closeDiscussionFrame(DiscussionSubjectInterface dsi)
 			throws RemoteException {
 		this.getDiscussionFrame(dsi).closeFrame();
 	}
@@ -152,14 +152,14 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized void closeDiscussion(DiscussionSubjectInterface dsi)
+	public void closeDiscussion(DiscussionSubjectInterface dsi)
 			throws RemoteException {
 		ClientDiscussionFrame cdf=this.getDiscussionFrame(dsi);
-		this.openedDiscussion.remove(cdf);		
+		this.openedDiscussion.remove(cdf);
 	}
 	
 	@Override
-	public synchronized void error(String message, boolean inFrame) throws RemoteException {
+	public void error(String message, boolean inFrame) throws RemoteException {
 		if(inFrame) {
 			JOptionPane.showMessageDialog(this.mainFrame, "<html>"+
 					message.replaceAll("\n", "<br>")+"</html>",
@@ -170,7 +170,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 
 	@Override
-	public synchronized void display(String message, boolean inFrame) throws RemoteException {
+	public void display(String message, boolean inFrame) throws RemoteException {
 		if(inFrame) {
 			this.display(message, this.mainFrame);
 		}
@@ -181,7 +181,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized void display(String message, JFrame parent) throws RemoteException {
+	public void display(String message, JFrame parent) throws RemoteException {
 		JOptionPane.showMessageDialog(parent, "<html>"+
 				message.replaceAll("\n", "<br>")+"</html>", "Information",
 				JOptionPane.INFORMATION_MESSAGE);
@@ -190,12 +190,12 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 
 	@Override
-	public synchronized void getMessage(String message) throws RemoteException {
+	public void getMessage(String message) throws RemoteException {
 		this.display("[SERVER]: "+message, false);
 	}
 	
 	@Override
-	public synchronized void getMessage(MessageInterface message, DiscussionSubjectInterface dsi)
+	public void getMessage(MessageInterface message, DiscussionSubjectInterface dsi)
 			throws RemoteException {
 		ClientDiscussionFrame frame=this.getDiscussionFrame(dsi);
 		if(frame==null) {
@@ -206,7 +206,7 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized ClientDiscussionFrame getDiscussionFrame(DiscussionSubjectInterface dsi)
+	public ClientDiscussionFrame getDiscussionFrame(DiscussionSubjectInterface dsi)
 			throws RemoteException {
 		for(ClientDiscussionFrame frame:this.openedDiscussion) {
 			if(frame==null) {
@@ -220,13 +220,13 @@ public class ClientDisplayer extends UnicastRemoteObject
 	}
 	
 	@Override
-	public synchronized boolean isOpenedDiscussion(DiscussionSubjectInterface dsi)
+	public boolean isOpenedDiscussion(DiscussionSubjectInterface dsi)
 		throws RemoteException {
 		return this.getDiscussionFrame(dsi)!=null;
 	}
 	
 	@Override
-	public synchronized boolean openDiscussion(ClientDiscussionFrame cdf)
+	public boolean openDiscussion(ClientDiscussionFrame cdf)
 		throws RemoteException {
 		if(this.openedDiscussion.contains(cdf)) {
 			return false;

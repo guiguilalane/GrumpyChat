@@ -9,10 +9,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -106,12 +108,14 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener, Adj
 		this.label.setText(this.nbChannels+" Available subjects:");
 		JButton dsButton = new JButton();
 		dsButton.setLayout(new FlowLayout());
+		final DiscussionSubjectMenu dsm=this;
 		dsButton.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent event) {
+				boolean error=false;
 				try {
-					boolean connected=subject.isConnected(client.getClient());
+					boolean connected=subject.isConnected(client);
 					if(connected||client.getServer().subscribe(subject, client)) {
 						if(client.isOpenedDiscussion(subject)) {
 							client.getDiscussionFrame(subject).setVisible(true);
@@ -123,10 +127,17 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener, Adj
 					else {
 						client.error("You did not success to subscribe to the cannel", true);
 					}
+				} catch (ConnectException ce) {
+					error=true;
 				} catch (HeadlessException e) {
 					e.printStackTrace();
 				} catch (RemoteException e) {
-					e.printStackTrace();
+					error=true;
+				}
+				if(error) {
+					JOptionPane.showMessageDialog(dsm, "Connection seems to be lost",
+							"Connection error! x)",JOptionPane.ERROR_MESSAGE);
+					System.exit(0);
 				}
 			}
 		});
@@ -222,6 +233,7 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener, Adj
 		this.scrollPos=newPos;
 		this.subjectsScroll.getViewport().setViewPosition(new Point(newPos,currentPos.y));
 		this.subjectsPanel.revalidate();
+		this.repaint();
 	}
 
 	@Override
