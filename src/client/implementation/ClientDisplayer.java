@@ -118,7 +118,9 @@ public class ClientDisplayer extends UnicastRemoteObject
 	
 	@Override
 	public void exit() throws RemoteException {
-		this.server.disconnectUser(this);
+		if(this.server!=null) {
+			this.server.disconnectUser(this);
+		}
 		this.display("See you later dude!", true);
 		this.getMainFrame().setVisible(false);
 		for(ClientDiscussionFrame cdf:this.openedDiscussion) {
