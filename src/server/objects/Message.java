@@ -9,8 +9,9 @@ import server.objects.interfaces.MessageInterface;
 import client.interfaces.ClientInterface;
 
 /**
- * The message, identified by the #{@link ClientInterface client} and
- * his {@link String message}. 
+ * The message, identified by the #{@link ClientInterface client} and his
+ * {@link String message}.
+ * 
  * @author Grumpy Group
  */
 public class Message implements MessageInterface, Serializable {
@@ -34,12 +35,16 @@ public class Message implements MessageInterface, Serializable {
 	/**
 	 * Date format as <code>HH:mm:ss</code>
 	 */
-	protected static SimpleDateFormat dateFormat=new SimpleDateFormat("HH:mm:ss");
-	
+	protected static SimpleDateFormat dateFormat = new SimpleDateFormat(
+			"HH:mm:ss");
+
 	/**
 	 * Constructor
-	 * @param client {@link ClientInterface} - The client
-	 * @param message {@link String} - The message
+	 * 
+	 * @param client
+	 *            {@link ClientInterface} - The client
+	 * @param message
+	 *            {@link String} - The message
 	 */
 	public Message(ClientInterface client, String message) {
 		super();
@@ -62,18 +67,20 @@ public class Message implements MessageInterface, Serializable {
 	public Date getDate() {
 		return this.date;
 	}
-	
+
 	@Override
 	public String getDateString() {
-		return "["+Message.dateFormat.format(this.date)+"] ";
+		return "[" + Message.dateFormat.format(this.date) + "] ";
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((client == null) ? 0 : client.hashCode());
-		result = prime * result + ((message == null) ? 0 : message.hashCode());
+		result = prime * result
+				+ ((this.client == null) ? 0 : this.client.hashCode());
+		result = prime * result
+				+ ((this.message == null) ? 0 : this.message.hashCode());
 		return result;
 	}
 
@@ -86,22 +93,23 @@ public class Message implements MessageInterface, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Message other = (Message) obj;
-		if (client == null) {
+		if (this.client == null) {
 			if (other.client != null)
 				return false;
-		} else if (!client.equals(other.client))
+		} else if (!this.client.equals(other.client))
 			return false;
-		if (message == null) {
+		if (this.message == null) {
 			if (other.message != null)
 				return false;
-		} else if (!message.equals(other.message))
+		} else if (!this.message.equals(other.message))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Message [client=" + client + ", message=" + message + "]";
+		return "Message [client=" + this.client + ", message=" + this.message
+				+ "]";
 	}
 
 }

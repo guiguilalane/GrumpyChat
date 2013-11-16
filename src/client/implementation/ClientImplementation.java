@@ -7,6 +7,7 @@ import client.interfaces.ClientInterface;
 
 /**
  * The client instance implementation, the client that is used for the user
+ * 
  * @author Grumpy Chat
  */
 public class ClientImplementation implements ClientInterface, Serializable {
@@ -18,29 +19,32 @@ public class ClientImplementation implements ClientInterface, Serializable {
 	/**
 	 * His identificator name
 	 */
-	private String pseudo="Unamed";
-	
+	private String pseudo = "Unamed";
+
 	/**
-	 * Constructor using his pseudo 
-	 * @param pseudo {@link String} - The client pseudo
+	 * Constructor using his pseudo
+	 * 
+	 * @param pseudo
+	 *            {@link String} - The client pseudo
 	 */
 	public ClientImplementation(String pseudo) {
-		this.pseudo=pseudo;
+		this.pseudo = pseudo;
 	}
 
 	@Override
 	public String getPseudo() throws RemoteException {
 		return this.pseudo;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((pseudo == null) ? 0 : pseudo.hashCode());
+		result = prime * result
+				+ ((this.pseudo == null) ? 0 : this.pseudo.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -50,16 +54,16 @@ public class ClientImplementation implements ClientInterface, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		ClientImplementation other = (ClientImplementation) obj;
-		if (pseudo == null) {
+		if (this.pseudo == null) {
 			if (other.pseudo != null)
 				return false;
-		} else if (!pseudo.equals(other.pseudo))
+		} else if (!this.pseudo.equals(other.pseudo))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Client['" + pseudo + "']";
+		return "Client['" + this.pseudo + "']";
 	}
 }

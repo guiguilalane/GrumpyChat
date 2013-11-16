@@ -1,4 +1,5 @@
 package server.objects;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -7,16 +8,18 @@ import java.util.List;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
+import server.objects.interfaces.ServerForumInterface;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
 
 /**
  * The discussion subjects on the forum
+ * 
  * @author Grumpy Group
  */
-public class DiscussionSubject extends UnicastRemoteObject
-	implements DiscussionSubjectInterface {
-	
+public class DiscussionSubject extends UnicastRemoteObject implements
+		DiscussionSubjectInterface {
+
 	/**
 	 * ID
 	 */
@@ -24,36 +27,40 @@ public class DiscussionSubject extends UnicastRemoteObject
 	/**
 	 * The maximum of simultaneously connected clients;
 	 */
-	private int maxClients=10;
+	private int maxClients = 10;
 	/**
 	 * The discussion title
 	 */
-	private String title="unknown";
+	private String title = "unknown";
 	/**
 	 * The list of registered clients
 	 */
-	private List<ClientDisplayerInterface> clients=new ArrayList<ClientDisplayerInterface>();
+	private List<ClientDisplayerInterface> clients = new ArrayList<ClientDisplayerInterface>();
 	/**
 	 * The list of message in current discussion
 	 */
-	private List<MessageInterface> messages=new ArrayList<MessageInterface>();
+	private List<MessageInterface> messages = new ArrayList<MessageInterface>();
 	/**
 	 * The discussion owner
 	 */
-	private ClientDisplayerInterface owner=null;
-	
+	private ClientDisplayerInterface owner = null;
+
 	/**
 	 * Constructor with the discussion title
-	 * @param title {@link String} - The discussion title
-	 * @param owner {@link ClientDisplayerInterface} - The discussion owner controller
+	 * 
+	 * @param title
+	 *            {@link String} - The discussion title
+	 * @param owner
+	 *            {@link ClientDisplayerInterface} - The discussion owner
+	 *            controller
 	 * @throws RemoteException
 	 */
 	public DiscussionSubject(String title, ClientDisplayerInterface owner)
 			throws RemoteException {
-		this.title=title;
-		this.owner=owner;
+		this.title = title;
+		this.owner = owner;
 	}
-	
+
 	@Override
 	public String getTitle() throws RemoteException {
 		return this.title;
@@ -66,54 +73,54 @@ public class DiscussionSubject extends UnicastRemoteObject
 
 	@Override
 	public List<MessageInterface> getMessages() throws RemoteException {
-		return messages;
+		return this.messages;
 	}
-	
+
 	@Override
 	public ClientDisplayerInterface getOwner() throws RemoteException {
 		return this.owner;
 	}
-	
+
 	@Override
-	public void setOwner(ClientDisplayerInterface owner)
-			throws RemoteException {
-		this.owner=owner;
+	public void setOwner(ClientDisplayerInterface owner) throws RemoteException {
+		this.owner = owner;
 	}
-	
+
 	private boolean containsClient(ClientInterface client)
 			throws RemoteException {
-		for(ClientDisplayerInterface cdi:this.clients) {
-			if(cdi.getClient().equals(client)) {
+		for (ClientDisplayerInterface cdi : this.clients) {
+			if (cdi.getClient().equals(client)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean addMessage(MessageInterface message) throws RemoteException {
-		if(this.containsClient(message.getClient())||
-				message.getClient().equals(ServerForum.CLIENT))
-		{
+		if (this.containsClient(message.getClient())
+				|| message.getClient().equals(ServerForumInterface.CLIENT)) {
 			this.messages.add(message);
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean isFull() throws RemoteException {
-		return this.clients.size()>=this.maxClients;
-	}
-	
-	@Override
-	public void setMaxClients(int max) throws RemoteException {
-		this.maxClients=max;
+		return this.clients.size() >= this.maxClients;
 	}
 
 	@Override
-	public boolean subscribe(ClientDisplayerInterface client) throws RemoteException {
-		if(!this.clients.contains(client)&&this.clients.size()<this.maxClients) {
+	public void setMaxClients(int max) throws RemoteException {
+		this.maxClients = max;
+	}
+
+	@Override
+	public boolean subscribe(ClientDisplayerInterface client)
+			throws RemoteException {
+		if (!this.clients.contains(client)
+				&& this.clients.size() < this.maxClients) {
 			return this.clients.add(client);
 		}
 		return false;
@@ -124,34 +131,35 @@ public class DiscussionSubject extends UnicastRemoteObject
 			throws RemoteException {
 		return this.clients.remove(client);
 	}
-	
+
 	@Override
-	public void diffuse(MessageInterface message)
-			throws RemoteException {
-//		for(ClientDisplayerInterface cdi:this.clients) {
-//			cdi.getMessage(message, this);
-//		}
+	public void diffuse(MessageInterface message) throws RemoteException {
+		// for(ClientDisplayerInterface cdi:this.clients) {
+		// cdi.getMessage(message, this);
+		// }
 	}
-	
+
 	@Override
 	public String getList() throws RemoteException {
 		return Arrays.toString(this.clients.toArray());
 	}
-	
+
 	@Override
-	public boolean isConnected(ClientDisplayerInterface client) throws RemoteException {
+	public boolean isConnected(ClientDisplayerInterface client)
+			throws RemoteException {
 		return this.clients.contains(client);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + maxClients;
-		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		result = prime * result + this.maxClients;
+		result = prime * result
+				+ ((this.title == null) ? 0 : this.title.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -161,19 +169,19 @@ public class DiscussionSubject extends UnicastRemoteObject
 		if (getClass() != obj.getClass())
 			return false;
 		DiscussionSubject other = (DiscussionSubject) obj;
-		if (maxClients != other.maxClients)
+		if (this.maxClients != other.maxClients)
 			return false;
-		if (title == null) {
+		if (this.title == null) {
 			if (other.title != null)
 				return false;
-		} else if (!title.equals(other.title))
+		} else if (!this.title.equals(other.title))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "DiscussionSubject [title=" + title + ", clients: "+
-				Arrays.toString(this.clients.toArray())+"]";
+		return "DiscussionSubject [title=" + this.title + ", clients: "
+				+ Arrays.toString(this.clients.toArray()) + "]";
 	}
 }
