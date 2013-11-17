@@ -17,7 +17,6 @@ public class ExceptionManager extends Thread {
 			while (!Thread.currentThread().isInterrupted()) {
 				List<DiscussionException> exceptions = this.discussionFrame
 						.getExceptions();
-				System.err.println("Size: "+exceptions.size());
 				if (!exceptions.isEmpty()) {
 					for (DiscussionException de : exceptions) {
 						if (de.process(this.discussionFrame)) {
@@ -26,7 +25,7 @@ public class ExceptionManager extends Thread {
 					}
 					this.discussionFrame.getExceptions().clear();
 				}
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			}
 		} catch (InterruptedException e) {
 			// Thread killed
