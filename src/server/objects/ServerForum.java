@@ -50,8 +50,10 @@ public class ServerForum extends UnicastRemoteObject implements
 	public void initializedDiscussions() {
 		try {
 			synchronized (this.discussionSubjects) {
-				this.discussionSubjects.add(new DiscussionSubject("Chat", null));
-				this.discussionSubjects.add(new DiscussionSubject("Mangas", null));
+				this.discussionSubjects
+						.add(new DiscussionSubject("Chat", null));
+				this.discussionSubjects.add(new DiscussionSubject("Mangas",
+						null));
 				this.discussionSubjects.add(new DiscussionSubject("LoL", null));
 				this.discussionSubjects.add(new DiscussionSubject(
 						"Seeking for feeder", null));
@@ -236,7 +238,7 @@ public class ServerForum extends UnicastRemoteObject implements
 		}
 		ClientInterface c = client.getClient();
 		DiscussionSubjectInterface dsi = new DiscussionSubject(subject, client);
-		boolean created=false;
+		boolean created = false;
 		synchronized (this.discussionSubjects) {
 			created = this.discussionSubjects.add(dsi);
 		}
@@ -339,7 +341,7 @@ public class ServerForum extends UnicastRemoteObject implements
 			}
 		}
 		synchronized (this.clients) {
-		dsi.setOwner(null);
+			dsi.setOwner(null);
 			for (ClientDisplayerInterface c : this.clients) {
 				if (dsi.isConnected(c) && c.isOpenedDiscussion(dsi)) {
 					c.changeOwner(dsi);
@@ -401,7 +403,8 @@ public class ServerForum extends UnicastRemoteObject implements
 		synchronized (this.clients) {
 			if (!this.clients.contains(client)) {
 				this.clients.add(client);
-				this.broadCast(client, "Client '" + client.getClient().getPseudo()
+				this.broadCast(client, "Client '"
+						+ client.getClient().getPseudo()
 						+ "' has joined the server");
 				return true;
 			}

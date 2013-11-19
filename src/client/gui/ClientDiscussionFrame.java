@@ -417,22 +417,14 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 	}
 
 	public void close() throws InterruptedException {
-		System.err.println("Close!");
 		try {
-			System.err.println("Debug1");
 			if (this.discussion.isConnected(this.client)) {
-				System.err.println("Debug2");
 				this.client.getServer().unsubscribe(this.discussion,
 						this.client);
-				System.err.println("Debug3");
 			}
-			System.err.println("Debug4");
 			this.client.closeDiscussion(this.discussion);
-			System.err.println("Debug5");
 			this.exceptionManager.interrupt();
-			System.err.println("Debug6");
 			this.dispose();
-			System.err.println("Debug7");
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Connection seems to be lost",
 					"Connection error! x)", JOptionPane.ERROR_MESSAGE);
@@ -549,9 +541,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 					if (this.discussion.getOwner() != null
 							&& this.discussion.getOwner().getClient()
 									.equals(this.client.getClient())) {
-						System.err.println("Debug-1");
 						this.client.serverAskNewOwner(this.discussion);
-						System.err.println("Debug0");
 					}
 				} catch (RemoteException e) {
 					e.printStackTrace();
