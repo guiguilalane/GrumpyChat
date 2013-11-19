@@ -95,6 +95,11 @@ public class ServerForum extends UnicastRemoteObject implements
 	}
 
 	@Override
+	public List<ClientDisplayerInterface> getClients() throws RemoteException {
+		return this.clients;
+	}
+
+	@Override
 	public int getNumberOfChannel(ClientDisplayerInterface client)
 			throws RemoteException {
 		int nbChannel = 0;

@@ -17,7 +17,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.MalformedURLException;
 import java.rmi.ConnectException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -32,7 +35,9 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import server.objects.ServerRemoteForum;
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.ServerForumInterface;
 import client.implementation.ClientDisplayer;
 import client.interfaces.ClientDisplayerInterface;
 
@@ -316,7 +321,24 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 						subject = "";
 					}
 				} while (subject.isEmpty());
-				DiscussionSubjectInterface dsi = this.cd.getServer().create(
+				String url = "//" + this.cd.getClient().getIp() + ":"
+						+ this.cd.getClient().getPort() + "/"
+						+ subject;
+				ServerForumInterface server = new ServerRemoteForum(url,
+						this.cd.getClient().getPort(), this.cd.getServer().getClients());
+				try {
+					server = (ServerForumInterface) Naming.lookup(url);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (NotBoundException e) {
+					e.printStackTrace();
+				}
+				if (server == null) {
+					this.cd.error("Can deploy the server at '" + url
+							+ "'", true);
+					return;
+				}
+				DiscussionSubjectInterface dsi = server.create(
 						this.cd, subject);
 				if (dsi != null) {
 					this.updateSubjectPanel(this.cd.getServer()

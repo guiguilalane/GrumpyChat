@@ -136,10 +136,11 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 			public void actionPerformed(ActionEvent event) {
 				boolean error = false;
 				try {
-					boolean connected = false;
+					boolean connected = true;
 					ServerForumInterface server = subject.getServer();
 					// REMOTE SERVER
 					if (!server.equals(client.getServer())) {
+						connected = false;
 						String url = "//" + client.getClient().getIp() + ":"
 								+ client.getClient().getPort() + "/"
 								+ subject.getTitle();

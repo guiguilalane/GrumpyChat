@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import server.objects.ServerForum;
-
 import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
@@ -317,5 +316,7 @@ public interface ServerForumInterface extends Remote {
 	 */
 	public boolean setNewOwner(DiscussionSubjectInterface discussion,
 			ClientDisplayerInterface client) throws RemoteException;
+
+	public List<ClientDisplayerInterface> getClients() throws RemoteException;
 
 }

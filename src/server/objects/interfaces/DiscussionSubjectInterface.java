@@ -146,4 +146,7 @@ public interface DiscussionSubjectInterface extends Remote {
 	public void diffuse(MessageInterface message) throws RemoteException;
 
 	public ServerForumInterface getServer() throws RemoteException;
+
+//	public void setServer(ServerForumInterface server) throws RemoteException;
+	
 }

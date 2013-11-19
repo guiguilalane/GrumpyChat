@@ -70,6 +70,11 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 	public ServerForumInterface getServer() throws RemoteException {
 		return this.server;
 	}
+	
+//	@Override
+//	public void setServer(ServerForumInterface server) {
+//		this.server = server;
+//	}
 
 	@Override
 	public String getTitle() throws RemoteException {

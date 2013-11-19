@@ -55,14 +55,14 @@ public class ServerMainForum extends ServerForum {
 				|| this.isFullChannel(client) || this.serverExists(remoteURL)) {
 			return null;
 		}
-		ServerRemoteForum server = new ServerRemoteForum(remoteURL);
-		DiscussionSubjectInterface dsi = server.create(client, subject);
-		if (dsi != null) {
-			this.broadCastUpdateFrame(client);
-			dsi.subscribe(client);
-			this.addServer(server);
-			return dsi;
-		}
+//		ServerRemoteForum server = new ServerRemoteForum(remoteURL, this);
+//		DiscussionSubjectInterface dsi = server.create(client, subject);
+//		if (dsi != null) {
+//			this.broadCastUpdateFrame(client);
+//			dsi.subscribe(client);
+//			this.addServer(server);
+//			return dsi;
+//		}
 		return null;
 	}
 
@@ -125,26 +125,14 @@ public class ServerMainForum extends ServerForum {
 			}
 		}
 		synchronized (this.servers) {
-			for(ServerRemoteForum s:this.servers) {
-				DiscussionSubjectInterface dsi=s.getSubjectFromName(title);
-				if(dsi!=null) {
+			for (ServerRemoteForum s : this.servers) {
+				DiscussionSubjectInterface dsi = s.getSubjectFromName(title);
+				if (dsi != null) {
 					return dsi;
 				}
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public void broadCastUpdateFrame(ClientDisplayerInterface client)
-			throws RemoteException {
-		synchronized (this.clients) {
-			for (ClientDisplayerInterface c : this.clients) {
-				if (client == null || !client.equals(c)) {
-					c.updateChannelList(this.getDiscussions());
-				}
-			}
-		}
 	}
 
 }
