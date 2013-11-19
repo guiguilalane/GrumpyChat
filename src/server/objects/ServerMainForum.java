@@ -19,9 +19,10 @@ public class ServerMainForum extends ServerForum {
 	private int port;
 
 	public ServerMainForum(String ip, int port) throws RemoteException {
-		super();
+		super(null);
 		this.ip = ip;
 		this.port = port;
+		this.remoteURL = "//" + ip + ":" + port + "/GrumpyChat";
 	}
 
 	protected boolean addServer(ServerRemoteForum server) {
@@ -39,8 +40,12 @@ public class ServerMainForum extends ServerForum {
 	protected ServerRemoteForum getServer(String url) {
 		synchronized (this.servers) {
 			for (ServerRemoteForum s : this.servers) {
-				if (s.getRemoteURL().equalsIgnoreCase(url)) {
-					return s;
+				try {
+					if (s.getRemoteURL().equalsIgnoreCase(url)) {
+						return s;
+					}
+				} catch (RemoteException e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -55,22 +60,26 @@ public class ServerMainForum extends ServerForum {
 				|| this.isFullChannel(client) || this.serverExists(remoteURL)) {
 			return null;
 		}
-//		ServerRemoteForum server = new ServerRemoteForum(remoteURL, this);
-//		DiscussionSubjectInterface dsi = server.create(client, subject);
-//		if (dsi != null) {
-//			this.broadCastUpdateFrame(client);
-//			dsi.subscribe(client);
-//			this.addServer(server);
-//			return dsi;
-//		}
+		// ServerRemoteForum server = new ServerRemoteForum(remoteURL, this);
+		// DiscussionSubjectInterface dsi = server.create(client, subject);
+		// if (dsi != null) {
+		// this.broadCastUpdateFrame(client);
+		// dsi.subscribe(client);
+		// this.addServer(server);
+		// return dsi;
+		// }
 		return null;
 	}
 
 	private boolean serverExists(String url) {
 		synchronized (this.servers) {
 			for (ServerRemoteForum s : this.servers) {
-				if (s.getRemoteURL().equalsIgnoreCase(url)) {
-					return true;
+				try {
+					if (s.getRemoteURL().equalsIgnoreCase(url)) {
+						return true;
+					}
+				} catch (RemoteException e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -133,6 +142,16 @@ public class ServerMainForum extends ServerForum {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return super.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		return super.hashCode();
 	}
 
 }

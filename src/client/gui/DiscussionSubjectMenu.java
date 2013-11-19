@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
+import server.objects.ServerRemoteForum;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.ServerForumInterface;
 import client.interfaces.ClientDisplayerInterface;
@@ -141,11 +142,11 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 					// REMOTE SERVER
 					if (!server.equals(client.getServer())) {
 						connected = false;
-						String url = "//" + client.getClient().getIp() + ":"
-								+ client.getClient().getPort() + "/"
-								+ subject.getTitle();
+						String url = server.getRemoteURL();
+						System.out.println("URL: "+url);
 						try {
-							server = (ServerForumInterface) Naming.lookup(url);
+							ServerRemoteForum serverRemote = (ServerRemoteForum) Naming.lookup(url);
+							server=serverRemote;
 							connected = true;
 						} catch (MalformedURLException e) {
 							e.printStackTrace();
@@ -166,12 +167,15 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 								"You did not success to subscribe to the cannel",
 								true);
 					}
-				} catch (ConnectException ce) {
+				} catch (ConnectException e) {
 					error = true;
+					e.printStackTrace();
 				} catch (HeadlessException e) {
+					e.printStackTrace();
 					e.printStackTrace();
 				} catch (RemoteException e) {
 					error = true;
+					e.printStackTrace();
 				}
 				if (error) {
 					JOptionPane.showMessageDialog(dsm,

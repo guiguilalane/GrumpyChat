@@ -34,14 +34,19 @@ public class ServerForum extends UnicastRemoteObject implements
 	 * forum
 	 */
 	protected List<ClientDisplayerInterface> clients = new ArrayList<ClientDisplayerInterface>();
+	/**
+	 * The remote deploy URL
+	 */
+	protected String remoteURL = null;
 
 	/**
 	 * Default Constructor
 	 * 
 	 * @throws RemoteException
 	 */
-	public ServerForum() throws RemoteException {
+	public ServerForum(String url) throws RemoteException {
 		super();
+		this.remoteURL=url;
 	}
 
 	/**
@@ -97,6 +102,11 @@ public class ServerForum extends UnicastRemoteObject implements
 	@Override
 	public List<ClientDisplayerInterface> getClients() throws RemoteException {
 		return this.clients;
+	}
+	
+	@Override
+	public String getRemoteURL() throws RemoteException {
+		return this.remoteURL;
 	}
 
 	@Override
@@ -299,7 +309,8 @@ public class ServerForum extends UnicastRemoteObject implements
 		return subscribed;
 	}
 
-	protected boolean containsSubject(DiscussionSubjectInterface dsi)
+	@Override
+	public boolean containsSubject(DiscussionSubjectInterface dsi)
 			throws RemoteException {
 		synchronized (this.discussionSubjects) {
 			for (DiscussionSubjectInterface d : this.discussionSubjects) {
@@ -493,6 +504,56 @@ public class ServerForum extends UnicastRemoteObject implements
 		synchronized (this.discussionSubjects) {
 			return Arrays.toString(this.discussionSubjects.toArray());
 		}
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((clients == null) ? 0 : clients.hashCode());
+		result = prime
+				* result
+				+ ((discussionSubjects == null) ? 0 : discussionSubjects
+						.hashCode());
+		result = prime * result
+				+ ((remoteURL == null) ? 0 : remoteURL.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (!(obj instanceof ServerForum)) {
+			return false;
+		}
+		ServerForum other = (ServerForum) obj;
+		if (clients == null) {
+			if (other.clients != null) {
+				return false;
+			}
+		} else if (!clients.equals(other.clients)) {
+			return false;
+		}
+		if (discussionSubjects == null) {
+			if (other.discussionSubjects != null) {
+				return false;
+			}
+		} else if (!discussionSubjects.equals(other.discussionSubjects)) {
+			return false;
+		}
+		if (remoteURL == null) {
+			if (other.remoteURL != null) {
+				return false;
+			}
+		} else if (!remoteURL.equals(other.remoteURL)) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

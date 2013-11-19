@@ -319,4 +319,9 @@ public interface ServerForumInterface extends Remote {
 
 	public List<ClientDisplayerInterface> getClients() throws RemoteException;
 
+	public boolean containsSubject(DiscussionSubjectInterface dsi)
+			throws RemoteException;
+
+	public String getRemoteURL() throws RemoteException;
+
 }

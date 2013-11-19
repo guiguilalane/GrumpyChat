@@ -16,17 +16,15 @@ public class ServerRemoteForum extends ServerForum {
 	 * ID
 	 */
 	private static final long serialVersionUID = 6541361995114344327L;
-	private String remoteURL = null;
 
 	public ServerRemoteForum(int port, String subject,
 			List<ClientDisplayerInterface> clients) throws RemoteException {
-		super();
+		super(null);
 
 		String url = null;
 		try {
 			url = "//" + InetAddress.getLocalHost().getHostAddress() + ":"
-					+ port + "/"
-					+ subject;
+					+ port + "/" + subject;
 		} catch (UnknownHostException e1) {
 			e1.printStackTrace();
 		}
@@ -40,9 +38,15 @@ public class ServerRemoteForum extends ServerForum {
 			e.printStackTrace();
 		}
 	}
-
-	protected String getRemoteURL() {
-		return this.remoteURL;
+	
+	@Override
+	public boolean equals(Object obj) {
+		return super.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		return super.hashCode();
 	}
 
 }
