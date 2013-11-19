@@ -34,6 +34,7 @@ import javax.swing.text.StyledDocument;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
 import client.implementation.ClientDisplayer;
+import client.interfaces.ClientDisplayerInterface;
 
 /**
  * This class is the main frame of the client side
@@ -59,7 +60,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 	 * The client displayer instance, it defines the clients attributes in
 	 * client side
 	 */
-	private ClientDisplayer cd;
+	private ClientDisplayerInterface cd;
 	/**
 	 * The globale log console
 	 */

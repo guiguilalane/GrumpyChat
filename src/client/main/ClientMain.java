@@ -1,6 +1,5 @@
 package client.main;
 
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
@@ -85,7 +84,7 @@ public class ClientMain {
 					command = "";
 				}
 			} while (command.isEmpty());
-			cd.setClient(new ClientImplementation(command));
+			cd.setClient(new ClientImplementation(command, ip, port));
 			server.newUser(cd);
 			cd.display("Welcome " + command, true);
 			cd.getMainFrame().setTitle("Client: " + command);
@@ -311,8 +310,8 @@ public class ClientMain {
 	 */
 	public static void main(String[] args) {
 		try {
-//			String ip="192.168.1.55";
-			String ip=InetAddress.getLocalHost().getHostName();;
+			String ip="192.168.1.66";
+//			String ip=InetAddress.getLocalHost().getHostName();;
 			new ClientMain().start(new ClientDisplayer(), ip);
 		} catch (RemoteException e) {
 			System.err.println("Error while loading client");

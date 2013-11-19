@@ -18,4 +18,8 @@ public interface ClientInterface extends Remote {
 	 */
 	public String getPseudo() throws RemoteException;
 
+	String getIp();
+
+	int getPort();
+
 }

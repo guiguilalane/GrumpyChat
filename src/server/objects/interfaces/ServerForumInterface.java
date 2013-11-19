@@ -21,7 +21,7 @@ public interface ServerForumInterface extends Remote {
 	 * The server client instance, used to send message for example
 	 */
 	public static final ClientInterface CLIENT = new ClientImplementation(
-			"SERVER");
+			"SERVER", null, 1100);
 	/**
 	 * Set the maximum of {@link DiscussionSubjectInterface channels} that a
 	 * user can create

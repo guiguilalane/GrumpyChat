@@ -44,6 +44,10 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 	 * The discussion owner
 	 */
 	private ClientDisplayerInterface owner = null;
+	/**
+	 * The host server where it is deployed
+	 */
+	private ServerForumInterface server;
 
 	/**
 	 * Constructor with the discussion title
@@ -55,10 +59,16 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 	 *            controller
 	 * @throws RemoteException
 	 */
-	public DiscussionSubject(String title, ClientDisplayerInterface owner)
-			throws RemoteException {
+	public DiscussionSubject(String title, ClientDisplayerInterface owner,
+			ServerForumInterface server) throws RemoteException {
 		this.title = title;
 		this.owner = owner;
+		this.server = server;
+	}
+
+	@Override
+	public ServerForumInterface getServer() throws RemoteException {
+		return this.server;
 	}
 
 	@Override

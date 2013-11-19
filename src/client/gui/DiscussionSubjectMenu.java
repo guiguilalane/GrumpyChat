@@ -9,7 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.net.MalformedURLException;
 import java.rmi.ConnectException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import javax.swing.JButton;
@@ -20,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
 import server.objects.interfaces.DiscussionSubjectInterface;
+import server.objects.interfaces.ServerForumInterface;
 import client.interfaces.ClientDisplayerInterface;
 
 /**
@@ -132,9 +136,24 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 			public void actionPerformed(ActionEvent event) {
 				boolean error = false;
 				try {
-					boolean connected = subject.isConnected(client);
-					if (connected
-							|| client.getServer().subscribe(subject, client)) {
+					boolean connected = false;
+					ServerForumInterface server = subject.getServer();
+					// REMOTE SERVER
+					if (!server.equals(client.getServer())) {
+						String url = "//" + client.getClient().getIp() + ":"
+								+ client.getClient().getPort() + "/"
+								+ subject.getTitle();
+						try {
+							server = (ServerForumInterface) Naming.lookup(url);
+							connected = true;
+						} catch (MalformedURLException e) {
+							e.printStackTrace();
+						} catch (NotBoundException e) {
+							e.printStackTrace();
+						}
+					}
+					connected &= subject.isConnected(client);
+					if (connected || server.subscribe(subject, client)) {
 						if (client.isOpenedDiscussion(subject)) {
 							client.getDiscussionFrame(subject).setVisible(true);
 						} else {
@@ -230,8 +249,9 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 				}
 			}
 		} catch (NullPointerException e) {
-			/* Need insert a non bloquant null pointer exception
-			 * for the next and previous button
+			/*
+			 * Need insert a non bloquant null pointer exception for the next
+			 * and previous button
 			 */
 		}
 	}

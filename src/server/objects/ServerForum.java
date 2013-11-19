@@ -28,12 +28,12 @@ public class ServerForum extends UnicastRemoteObject implements
 	 * The map of the {@link DiscussionSubjectInterface discussion subjects} and
 	 * their {@link ClientDisplayerInterface authors}
 	 */
-	private List<DiscussionSubjectInterface> discussionSubjects = new ArrayList<DiscussionSubjectInterface>();
+	protected List<DiscussionSubjectInterface> discussionSubjects = new ArrayList<DiscussionSubjectInterface>();
 	/**
 	 * The list of all connected {@link ClientDisplayerInterface users} on the
 	 * forum
 	 */
-	private List<ClientDisplayerInterface> clients = new ArrayList<ClientDisplayerInterface>();
+	protected List<ClientDisplayerInterface> clients = new ArrayList<ClientDisplayerInterface>();
 
 	/**
 	 * Default Constructor
@@ -50,13 +50,14 @@ public class ServerForum extends UnicastRemoteObject implements
 	public void initializedDiscussions() {
 		try {
 			synchronized (this.discussionSubjects) {
-				this.discussionSubjects
-						.add(new DiscussionSubject("Chat", null));
+				this.discussionSubjects.add(new DiscussionSubject("Chat", null,
+						this));
 				this.discussionSubjects.add(new DiscussionSubject("Mangas",
-						null));
-				this.discussionSubjects.add(new DiscussionSubject("LoL", null));
+						null, this));
+				this.discussionSubjects.add(new DiscussionSubject("LoL", null,
+						this));
 				this.discussionSubjects.add(new DiscussionSubject(
-						"Seeking for feeder", null));
+						"Seeking for feeder", null, this));
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -237,7 +238,8 @@ public class ServerForum extends UnicastRemoteObject implements
 			return null;
 		}
 		ClientInterface c = client.getClient();
-		DiscussionSubjectInterface dsi = new DiscussionSubject(subject, client);
+		DiscussionSubjectInterface dsi = new DiscussionSubject(subject, client,
+				this);
 		boolean created = false;
 		synchronized (this.discussionSubjects) {
 			created = this.discussionSubjects.add(dsi);
@@ -270,6 +272,7 @@ public class ServerForum extends UnicastRemoteObject implements
 	@Override
 	public boolean subscribe(DiscussionSubjectInterface dsi,
 			ClientDisplayerInterface client) throws RemoteException {
+		System.out.println(this.getClass().getName());
 		ClientInterface ci = client.getClient();
 		boolean subscribed = dsi.subscribe(client);
 		if (subscribed) {
@@ -289,6 +292,18 @@ public class ServerForum extends UnicastRemoteObject implements
 					+ "'");
 		}
 		return subscribed;
+	}
+
+	protected boolean containsSubject(DiscussionSubjectInterface dsi)
+			throws RemoteException {
+		synchronized (this.discussionSubjects) {
+			for (DiscussionSubjectInterface d : this.discussionSubjects) {
+				if (d.getTitle().equals(dsi.getTitle())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override

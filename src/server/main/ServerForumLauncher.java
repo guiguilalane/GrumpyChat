@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.ExportException;
 
-import server.objects.ServerForum;
+import server.objects.ServerMainForum;
 
 /**
  * The server launcher
@@ -37,7 +37,7 @@ public class ServerForumLauncher {
 			System.out.println("[ Trying registry with port " + port + " ]");
 			LocateRegistry.createRegistry(port);
 
-			ServerForum serverForum = new ServerForum();
+			ServerMainForum serverForum = new ServerMainForum(ip,port);
 			serverForum.initializedDiscussions();
 			/*
 			 * On a dit pas 'rmi:'//... !!

@@ -106,7 +106,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		try {
 			title = discussion.getTitle();
 			users = discussion.getClients().size() - 1;
-			owner = this.client.getServer().getOwner(this.discussion);
+			owner = this.discussion.getServer().getOwner(this.discussion);
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}
@@ -161,7 +161,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		this.removeButton.addActionListener(this);
 		this.removeButton.setToolTipText("Remove this channel");
 		try {
-			if (this.client.getServer().isChannelOwner(this.client, title)) {
+			if (this.discussion.getServer().isChannelOwner(this.client, title)) {
 				this.topPanel.add(this.removeButton);
 			} else {
 				this.topPanel.add(this.ownerInfos);
@@ -345,7 +345,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 
 	public void changeOwner() {
 		try {
-			String owner = this.client.getServer().getOwner(this.discussion);
+			String owner = this.discussion.getServer().getOwner(this.discussion);
 			if (this.client.getClient().getPseudo().equalsIgnoreCase(owner)) {
 				this.topPanel.removeAll();
 				this.topPanel.add(this.label);
@@ -419,7 +419,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 	public void close() throws InterruptedException {
 		try {
 			if (this.discussion.isConnected(this.client)) {
-				this.client.getServer().unsubscribe(this.discussion,
+				this.discussion.getServer().unsubscribe(this.discussion,
 						this.client);
 			}
 			this.client.closeDiscussion(this.discussion);
@@ -446,7 +446,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		}
 		try {
 			MessageInterface msg = new Message(this.client.getClient(), message);
-			if (this.client.getServer().addMessage(this.client,
+			if (this.discussion.getServer().addMessage(this.client,
 					this.discussion, msg)) {
 				this.messageContent.setText("");
 			}
@@ -469,7 +469,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 	public void tryToBeNewOwner() {
 		boolean newOwner = false;
 		try {
-			newOwner = this.client.getServer().setNewOwner(this.discussion,
+			newOwner = this.discussion.getServer().setNewOwner(this.discussion,
 					this.client);
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -575,13 +575,12 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		} else if (event.getSource().equals(this.removeButton)) {
 			try {
 				if (this.askRemove()) {
-					if (!this.client.getServer().isChannelOwner(this.client,
-							this.discussion.getTitle())) {
+					if (!this.discussion.getOwner().equals(this.client)) {
 						this.client
 								.error("You are not the channel owner", true);
 						return;
 					}
-					DiscussionSubjectInterface dsi = this.client.getServer()
+					DiscussionSubjectInterface dsi = this.discussion.getServer()
 							.remove(this.client, this.discussion.getTitle());
 					if (dsi != null) {
 						this.client.updateChannelList(this.client.getServer()
@@ -594,7 +593,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 						} catch (InterruptedException e) {
 							// Dispose error
 						}
-						this.client.getServer().closeFrames(this.client,
+						this.discussion.getServer().closeFrames(this.client,
 								this.discussion);
 					} else {
 						this.client.error(

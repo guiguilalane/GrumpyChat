@@ -20,15 +20,33 @@ public class ClientImplementation implements ClientInterface, Serializable {
 	 * His identificator name
 	 */
 	private String pseudo = "Unamed";
+	private String ip;
+	private int port;
 
 	/**
 	 * Constructor using his pseudo
 	 * 
 	 * @param pseudo
 	 *            {@link String} - The client pseudo
+	 * @param ip
+	 *            {@link String} - The server IP address
+	 * @param port
+	 *            {@link Integer int} - The server port
 	 */
-	public ClientImplementation(String pseudo) {
+	public ClientImplementation(String pseudo, String ip, int port) {
 		this.pseudo = pseudo;
+		this.ip=ip;
+		this.port=port;
+	}
+
+	@Override
+	public String getIp() {
+		return this.ip;
+	}
+
+	@Override
+	public int getPort() {
+		return this.port;
 	}
 
 	@Override
