@@ -2,7 +2,6 @@ package client.main;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -32,10 +31,12 @@ public class ClientMain {
 	 * 
 	 * @param cd
 	 *            {@link ClientDisplayer} - The client displayer
+	 * @param ip
+	 *            {@link String} - The server IP address
 	 * @throws RemoteException
 	 */
 	// @SuppressWarnings("resource")
-	public void start(ClientDisplayerInterface cd) throws RemoteException {
+	public void start(ClientDisplayerInterface cd, String ip) throws RemoteException {
 
 		if (cd == null) {
 			System.err.println("Client displayer could not be instantiated");
@@ -53,10 +54,9 @@ public class ClientMain {
 		// }
 		try {
 			/*
-			 * On n'utilise pas rmi:
+			 * On n'utilise pas 'rmi:'//...
 			 */
-			url = "//" + InetAddress.getLocalHost().getHostName() + ":" + port
-					+ "/GrumpyChat";
+			url = "//"+ip+":"+port+"/GrumpyChat";
 			ServerForumInterface server = (ServerForumInterface) Naming
 					.lookup(url);
 			cd.setServer(server);
@@ -275,6 +275,7 @@ public class ClientMain {
 			// } while(!command.equalsIgnoreCase("/exit"));
 			// cd.exit();
 		} catch (ConnectException e) {
+			e.printStackTrace();
 			if (this.tries < 5) {
 				int wait = this.tries * 5;
 				wait = wait == 0 ? 1 : wait;
@@ -287,7 +288,7 @@ public class ClientMain {
 					e1.printStackTrace();
 				}
 				this.tries++;
-				this.start(cd);
+				this.start(cd,ip);
 			} else {
 				cd.error("Can not join the server", true);
 				System.exit(0);
@@ -300,10 +301,6 @@ public class ClientMain {
 			cd.error("The server bound does not work", true);
 			e.printStackTrace();
 			System.exit(0);
-		} catch (UnknownHostException e) {
-			cd.error("The server host seems not exist", true);
-			e.printStackTrace();
-			System.exit(0);
 		}
 	}
 
@@ -314,7 +311,9 @@ public class ClientMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			new ClientMain().start(new ClientDisplayer());
+//			String ip="192.168.1.55";
+			String ip=InetAddress.getLocalHost().getHostName();;
+			new ClientMain().start(new ClientDisplayer(), ip);
 		} catch (RemoteException e) {
 			System.err.println("Error while loading client");
 			JOptionPane.showMessageDialog(null,

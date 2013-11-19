@@ -22,23 +22,27 @@ public class ServerForumLauncher {
 	 * Allow to launch the server
 	 * 
 	 * @param args
-	 * @throws java.net.UnknownHostException
-	 * @throws RemoteException
 	 */
 	public static void main(String[] args) {
 		int port = 1100;
+		String ip;
+		try {
+			ip = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+			return;
+		}
+//		String ip="192.168.1.66"; 
 		try {
 			System.out.println("[ Trying registry with port " + port + " ]");
-
 			LocateRegistry.createRegistry(port);
 
 			ServerForum serverForum = new ServerForum();
 			serverForum.initializedDiscussions();
 			/*
-			 * On a dit pas rmi: !!
+			 * On a dit pas 'rmi:'//... !!
 			 */
-			String url = "//" + InetAddress.getLocalHost().getHostName() + ":"
-					+ port + "/GrumpyChat";
+			String url = "//"+ip+":"+port+"/GrumpyChat";
 			System.out.println("[ Registry of object with URL  ] : " + url);
 			Naming.rebind(url, serverForum);
 
@@ -53,10 +57,10 @@ public class ServerForumLauncher {
 			System.exit(0);
 		} catch (RemoteException e) {
 			e.printStackTrace();
+			System.exit(0);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			System.exit(0);
 		}
 	}
 }
