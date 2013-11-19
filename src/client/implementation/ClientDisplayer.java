@@ -133,6 +133,12 @@ public class ClientDisplayer extends UnicastRemoteObject implements
 					this.openedDiscussion);
 			for (ClientDiscussionFrame cdf : frames) {
 				try {
+					DiscussionSubjectInterface dsi = cdf.getDiscussion();
+					if (dsi.getOwner() != null
+							&& dsi.getOwner().getClient()
+									.equals(this.getClient())) {
+						this.serverAskNewOwner(dsi);
+					}
 					cdf.close();
 				} catch (InterruptedException e) {
 					// Dispose error

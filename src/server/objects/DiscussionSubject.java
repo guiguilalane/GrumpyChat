@@ -68,12 +68,16 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 
 	@Override
 	public List<ClientDisplayerInterface> getClients() throws RemoteException {
-		return this.clients;
+		synchronized (this.clients) {
+			return this.clients;
+		}
 	}
 
 	@Override
 	public List<MessageInterface> getMessages() throws RemoteException {
-		return this.messages;
+		synchronized (this.messages) {
+			return this.messages;
+		}
 	}
 
 	@Override
@@ -88,9 +92,11 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 
 	private boolean containsClient(ClientInterface client)
 			throws RemoteException {
-		for (ClientDisplayerInterface cdi : this.clients) {
-			if (cdi.getClient().equals(client)) {
-				return true;
+		synchronized (this.clients) {
+			for (ClientDisplayerInterface cdi : this.clients) {
+				if (cdi.getClient().equals(client)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -100,7 +106,9 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 	public boolean addMessage(MessageInterface message) throws RemoteException {
 		if (this.containsClient(message.getClient())
 				|| message.getClient().equals(ServerForumInterface.CLIENT)) {
-			this.messages.add(message);
+			synchronized (this.messages) {
+				this.messages.add(message);
+			}
 			return true;
 		}
 		return false;
@@ -108,7 +116,9 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 
 	@Override
 	public boolean isFull() throws RemoteException {
-		return this.clients.size() >= this.maxClients;
+		synchronized (this.clients) {
+			return this.clients.size() >= this.maxClients;
+		}
 	}
 
 	@Override
@@ -119,9 +129,11 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 	@Override
 	public boolean subscribe(ClientDisplayerInterface client)
 			throws RemoteException {
-		if (!this.clients.contains(client)
-				&& this.clients.size() < this.maxClients) {
-			return this.clients.add(client);
+		synchronized (this.clients) {
+			if (!this.clients.contains(client)
+					&& this.clients.size() < this.maxClients) {
+				return this.clients.add(client);
+			}
 		}
 		return false;
 	}
@@ -129,7 +141,9 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 	@Override
 	public boolean unsubscribe(ClientDisplayerInterface client)
 			throws RemoteException {
-		return this.clients.remove(client);
+		synchronized (this.clients) {
+			return this.clients.remove(client);
+		}
 	}
 
 	@Override
@@ -141,13 +155,17 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 
 	@Override
 	public String getList() throws RemoteException {
-		return Arrays.toString(this.clients.toArray());
+		synchronized (this.clients) {
+			return Arrays.toString(this.clients.toArray());
+		}
 	}
 
 	@Override
 	public boolean isConnected(ClientDisplayerInterface client)
 			throws RemoteException {
-		return this.clients.contains(client);
+		synchronized (this.clients) {
+			return this.clients.contains(client);
+		}
 	}
 
 	@Override
@@ -181,7 +199,9 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 
 	@Override
 	public String toString() {
-		return "DiscussionSubject [title=" + this.title + ", clients: "
-				+ Arrays.toString(this.clients.toArray()) + "]";
+		synchronized (this.clients) {
+			return "DiscussionSubject [title=" + this.title + ", clients: "
+					+ Arrays.toString(this.clients.toArray()) + "]";
+		}
 	}
 }
