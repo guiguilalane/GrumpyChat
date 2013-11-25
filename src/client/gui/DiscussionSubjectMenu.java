@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-import server.objects.ServerRemoteForum;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.ServerForumInterface;
 import client.interfaces.ClientDisplayerInterface;
@@ -145,8 +144,7 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 						String url = server.getRemoteURL();
 						System.out.println("URL: "+url);
 						try {
-							ServerRemoteForum serverRemote = (ServerRemoteForum) Naming.lookup(url);
-							server=serverRemote;
+							server = (ServerForumInterface) Naming.lookup(url);
 							connected = true;
 						} catch (MalformedURLException e) {
 							e.printStackTrace();
