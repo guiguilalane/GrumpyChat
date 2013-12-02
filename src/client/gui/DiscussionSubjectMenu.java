@@ -164,8 +164,8 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 							JOptionPane.showMessageDialog(dsm,
 									"Can not connect to this remote discussion",
 									"Connection error! :|", JOptionPane.ERROR_MESSAGE);
-							System.exit(0);
 							e.printStackTrace();
+							return;
 						}
 					}
 					else {

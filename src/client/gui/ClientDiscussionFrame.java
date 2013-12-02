@@ -564,7 +564,35 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 					if (this.discussion.getOwner() != null
 							&& this.discussion.getOwner().getClient()
 									.equals(this.client.getClient())) {
-						this.client.serverAskNewOwner(this.discussion);
+						if (this.isRemote()) {
+							List<ClientDisplayerInterface> clients = this.discussion
+									.getClients();
+							synchronized (clients) {
+								for (ClientDisplayerInterface cdi : clients) {
+									if (cdi.isOpenedDiscussion(this.discussion)) {
+										cdi.setInactiveDiscussion(this.discussion);
+									}
+								}
+							}
+							synchronized (clients) {
+								for (ClientDisplayerInterface cdi : clients) {
+									if (cdi.isOpenedDiscussion(this.discussion)) {
+										cdi.askNewOwner(this.discussion);
+									}
+								}
+							}
+							synchronized (clients) {
+								this.discussion.setOwner(null);
+								for (ClientDisplayerInterface c : clients) {
+									if (this.discussion.isConnected(c) && c.isOpenedDiscussion(this.discussion)) {
+										c.changeOwner(this.discussion);
+									}
+								}
+							}
+						}
+						else {
+							this.client.serverAskNewOwner(this.discussion);
+						}
 					}
 				} catch (RemoteException e) {
 					e.printStackTrace();
