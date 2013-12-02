@@ -256,6 +256,32 @@ public class ServerForum extends UnicastRemoteObject implements
 	}
 
 	@Override
+	public DiscussionSubjectInterface create(ClientDisplayerInterface client,
+			String subject, String ip) throws RemoteException {
+		if (this.getSubjectFromName(subject) != null
+				|| this.isFullChannel(client)) {
+			return null;
+		}
+		ClientInterface c = client.getClient();
+		DiscussionSubjectInterface dsi = new DiscussionRemoteSubject(subject, client, ip);
+		boolean created = false;
+		synchronized (this.discussionSubjects) {
+			created = this.discussionSubjects.add(dsi);
+		}
+		if (created) {
+			this.broadCast(client, "The client '" + c.getPseudo()
+					+ "' created the channel '" + subject + "'");
+			this.broadCastUpdateFrame(client);
+			dsi.subscribe(client);
+			dsi.addMessage(new Message(ServerForumInterface.CLIENT,
+					"*** client '" + c.getPseudo()
+							+ "' created the channel ***"));
+			return dsi;
+		}
+		return null;
+	}
+
+	@Override
 	public void broadCastUpdateFrame(ClientDisplayerInterface client)
 			throws RemoteException {
 		synchronized (this.clients) {

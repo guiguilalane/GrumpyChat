@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import server.objects.ServerForum;
-
 import client.implementation.ClientImplementation;
 import client.interfaces.ClientDisplayerInterface;
 import client.interfaces.ClientInterface;
@@ -177,6 +176,9 @@ public interface ServerForumInterface extends Remote {
 	 */
 	public DiscussionSubjectInterface create(ClientDisplayerInterface client,
 			String subject) throws RemoteException;
+
+	public DiscussionSubjectInterface create(ClientDisplayerInterface client,
+			String subject, String ip) throws RemoteException;
 
 	/**
 	 * Returns the number of {@link DiscussionSubjectInterface channel} created

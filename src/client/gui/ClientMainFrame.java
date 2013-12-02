@@ -17,7 +17,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.MalformedURLException;
 import java.rmi.ConnectException;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -315,11 +317,29 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 						subject = "";
 					}
 				} while (subject.isEmpty());
+				String ip="192.168.1.66";
 				DiscussionSubjectInterface dsi = this.cd.getServer().create(
-						this.cd, subject);
+						this.cd, subject, ip);
 				if (dsi != null) {
 					this.updateSubjectPanel(this.cd.getServer()
 							.getDiscussions());
+					String url = "//localhost:"
+							+"29760/"+subject.toLowerCase();
+					System.out.println("[ Registry of discussion with URL  ] : " + url);
+					boolean diffused=false;
+					try {
+						Naming.rebind(url, dsi);
+						diffused=true;
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					} catch (ConnectException e) {
+						e.printStackTrace();
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+					if(!diffused) {
+						System.out.println("Can not diffuse on URL : " + url);
+					}
 					this.cd.display("The channel '" + subject
 							+ "' has been correctly " + "created", true);
 					this.cd.openDiscussion(new ClientDiscussionFrame(this.cd,
