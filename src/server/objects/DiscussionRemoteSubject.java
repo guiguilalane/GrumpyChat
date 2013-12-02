@@ -48,7 +48,7 @@ public class DiscussionRemoteSubject extends UnicastRemoteObject implements
 	
 	@Override
 	public String getUrl() throws RemoteException {
-		return url;
+		return this.url;
 	}
 
 	@Override

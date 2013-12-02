@@ -327,7 +327,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 							.getDiscussions());
 					LocateRegistry.createRegistry(ClientMainFrame.currentPort);
 					String url = "//" + ip + ":" + ClientMainFrame.currentPort
-							+"/"+subject.toLowerCase();
+							+"/"+subject;
 					System.out.println("[ Registry of discussion with URL  ] : " + url);
 					boolean diffused=false;
 					try {

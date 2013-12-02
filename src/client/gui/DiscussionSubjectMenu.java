@@ -14,6 +14,7 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -129,29 +130,51 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 		JButton dsButton = new JButton();
 		dsButton.setLayout(new FlowLayout());
 		final DiscussionSubjectMenu dsm = this;
+		String url=null;
+		String title=null;
+		try {
+			url=subject.getUrl();
+			title=subject.getTitle();
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}
+		final String subjectURL=url;
+		final String subjectTitle=title;
 		dsButton.addActionListener(new ActionListener() {
+			
+			private String url=subjectURL;
+			private String title=subjectTitle;
 
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				boolean error = false;
 				try {
-					String url = subject.getUrl();
-					DiscussionSubjectInterface dsi = subject;
-					if (url != null) {
+					DiscussionSubjectInterface dsi = null;
+					if (this.url != null) {
 						try {
-							System.out.println("Trying connect: " + url);
+							System.out.println("Trying connect: //" + this.url+"/"+this.title);
+							LocateRegistry.createRegistry(1101);
 							dsi = (DiscussionSubjectInterface) Naming
-									.lookup("//" + url + "/"
-											+ subject.getTitle().toLowerCase());
+									.lookup("//" + this.url + "/"
+											+ this.title);
+							System.out.println(dsi.getTitle());
 						} catch (MalformedURLException e) {
 							e.printStackTrace();
 						} catch (NotBoundException e) {
+							JOptionPane.showMessageDialog(dsm,
+									"Can not connect to this remote discussion",
+									"Connection error! :|", JOptionPane.ERROR_MESSAGE);
+							System.exit(0);
 							e.printStackTrace();
 						}
 					}
+					else {
+						dsi=subject;
+					}
 					boolean connected = dsi.isConnected(client);
-					if (connected
-							|| client.getServer().subscribe(dsi, client)) {
+					boolean subscribed = (connected || (this.url!=null?dsi.subscribe(client):
+						client.getServer().subscribe(dsi, client)));
+					if (subscribed) {
 						if (client.isOpenedDiscussion(dsi)) {
 							client.getDiscussionFrame(dsi).setVisible(true);
 						} else {
@@ -163,11 +186,13 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 								"You did not success to subscribe to the cannel",
 								true);
 					}
-				} catch (ConnectException ce) {
+				} catch (ConnectException e) {
+					e.printStackTrace();
 					error = true;
 				} catch (HeadlessException e) {
 					e.printStackTrace();
 				} catch (RemoteException e) {
+					e.printStackTrace();
 					error = true;
 				}
 				if (error) {
@@ -178,13 +203,8 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 				}
 			}
 		});
-		try {
-			String title = subject.getTitle();
-			dsButton.setText(title);
-			dsButton.setToolTipText("Subscribe to '" + title + "' channel");
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+		dsButton.setText(title);
+		dsButton.setToolTipText("Subscribe to '" + title + "' channel");
 		this.subjectsPanel.add(dsButton);
 	}
 
