@@ -321,7 +321,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 				} while (subject.isEmpty());
 				String ip="192.168.1.55";
 				DiscussionSubjectInterface dsi = this.cd.getServer().create(
-						this.cd, subject, ip);
+						this.cd, subject, ip + ":" + ClientMainFrame.currentPort);
 				if (dsi != null) {
 					this.updateSubjectPanel(this.cd.getServer()
 							.getDiscussions());
