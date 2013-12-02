@@ -446,8 +446,15 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		}
 		try {
 			MessageInterface msg = new Message(this.client.getClient(), message);
-			if (this.client.getServer().addMessage(this.client,
-					this.discussion, msg)) {
+			boolean added=false;
+			if(this.isRemote()) {
+				added=this.discussion.addMessage(msg);
+			}
+			else {
+				added=this.client.getServer().addMessage(this.client,
+						this.discussion, msg);
+			}
+			if(added) {
 				this.messageContent.setText("");
 			}
 		} catch (RemoteException e) {
@@ -521,6 +528,15 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			if (event.getKeyCode() == KeyEvent.VK_ENTER) {
 				//
 			}
+		}
+	}
+	
+	private boolean isRemote() {
+		try {
+			return this.discussion.getUrl()!=null;
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 

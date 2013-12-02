@@ -135,46 +135,33 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 			public void actionPerformed(ActionEvent event) {
 				boolean error = false;
 				try {
-					String url=subject.getUrl();
-					DiscussionSubjectInterface dsi=subject;
-					if(url!=null) {
+					String url = subject.getUrl();
+					DiscussionSubjectInterface dsi = subject;
+					if (url != null) {
 						try {
-							dsi = (DiscussionSubjectInterface) Naming.lookup("//"+url+"/"+subject.getTitle());
+							System.out.println("Trying connect: " + url);
+							dsi = (DiscussionSubjectInterface) Naming
+									.lookup("//" + url + "/"
+											+ subject.getTitle().toLowerCase());
 						} catch (MalformedURLException e) {
 							e.printStackTrace();
 						} catch (NotBoundException e) {
 							e.printStackTrace();
 						}
-						boolean connected = dsi.isConnected(client);
-						if (connected
-								|| dsi.subscribe(client)) {
-							if (client.isOpenedDiscussion(dsi)) {
-								client.getDiscussionFrame(dsi).setVisible(true);
-							} else {
-								client.openDiscussion(new ClientDiscussionFrame(
-										client, dsi));
-							}
-						} else {
-							client.error(
-									"You did not success to subscribe to the cannel",
-									true);
-						}
 					}
-					else {
-						boolean connected = dsi.isConnected(client);
-						if (connected
-								|| client.getServer().subscribe(dsi, client)) {
-							if (client.isOpenedDiscussion(dsi)) {
-								client.getDiscussionFrame(dsi).setVisible(true);
-							} else {
-								client.openDiscussion(new ClientDiscussionFrame(
-										client, dsi));
-							}
+					boolean connected = dsi.isConnected(client);
+					if (connected
+							|| client.getServer().subscribe(dsi, client)) {
+						if (client.isOpenedDiscussion(dsi)) {
+							client.getDiscussionFrame(dsi).setVisible(true);
 						} else {
-							client.error(
-									"You did not success to subscribe to the cannel",
-									true);
+							client.openDiscussion(new ClientDiscussionFrame(
+									client, dsi));
 						}
+					} else {
+						client.error(
+								"You did not success to subscribe to the cannel",
+								true);
 					}
 				} catch (ConnectException ce) {
 					error = true;
@@ -260,8 +247,9 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 				}
 			}
 		} catch (NullPointerException e) {
-			/* Need insert a non bloquant null pointer exception
-			 * for the next and previous button
+			/*
+			 * Need insert a non bloquant null pointer exception for the next
+			 * and previous button
 			 */
 		}
 	}
