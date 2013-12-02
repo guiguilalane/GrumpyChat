@@ -446,15 +446,24 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		}
 		try {
 			MessageInterface msg = new Message(this.client.getClient(), message);
-			boolean added=false;
-			if(this.isRemote()) {
-				added=this.discussion.addMessage(msg);
-			}
-			else {
-				added=this.client.getServer().addMessage(this.client,
+			boolean added = false;
+			if (this.isRemote()) {
+				added = this.discussion.addMessage(msg);
+				if (this.client.equals(this.discussion.getOwner())) {
+					List<ClientDisplayerInterface> clients = this.discussion
+							.getClients();
+					for (ClientDisplayerInterface cdi : clients) {
+						if (this.client == null || !this.client.equals(cdi)) {
+							cdi.getMessage(msg, this.discussion);
+						}
+					}
+				}
+			} else {
+				added = this.client.getServer().addMessage(this.client,
 						this.discussion, msg);
 			}
-			if(added) {
+			if (added) {
+				this.client.getMessage(msg, this.discussion);
 				this.messageContent.setText("");
 			}
 		} catch (RemoteException e) {
@@ -488,8 +497,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-		}
-		else {
+		} else {
 			try {
 				this.client.display("Someone else has been fatser", this);
 			} catch (RemoteException e) {
@@ -530,10 +538,10 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			}
 		}
 	}
-	
+
 	private boolean isRemote() {
 		try {
-			return this.discussion.getUrl()!=null;
+			return this.discussion.getUrl() != null;
 		} catch (RemoteException e) {
 			e.printStackTrace();
 			return false;
