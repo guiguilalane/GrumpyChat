@@ -57,8 +57,8 @@ public class ClientMain {
 			 */
 			url = "//" + InetAddress.getLocalHost().getHostName() + ":" + port
 					+ "/GrumpyChat";
-			url = "//192.168.1.66:" + port
-					+ "/GrumpyChat";
+//			url = "//192.168.1.66:" + port
+//					+ "/GrumpyChat";
 			ServerForumInterface server = (ServerForumInterface) Naming
 					.lookup(url);
 			cd.setServer(server);

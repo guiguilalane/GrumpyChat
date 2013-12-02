@@ -17,7 +17,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -319,7 +321,14 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 						subject = "";
 					}
 				} while (subject.isEmpty());
-				String ip="192.168.1.55";
+				String ip;
+				try {
+					ip = InetAddress.getLocalHost().getHostName();
+				} catch (UnknownHostException e1) {
+					ip="localhost";
+					e1.printStackTrace();
+				}
+				ip="192.168.1.55";
 				DiscussionSubjectInterface dsi = this.cd.getServer().create(
 						this.cd, subject, ip + ":" + ClientMainFrame.currentPort);
 				if (dsi != null) {
