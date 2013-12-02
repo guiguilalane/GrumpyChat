@@ -449,15 +449,18 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			boolean added = false;
 			if (this.isRemote()) {
 				added = this.discussion.addMessage(msg);
-				if (this.client.equals(this.discussion.getOwner())) {
-					List<ClientDisplayerInterface> clients = this.discussion
-							.getClients();
-					for (ClientDisplayerInterface cdi : clients) {
-						if (this.client == null || !this.client.equals(cdi)) {
-							cdi.getMessage(msg, this.discussion);
-						}
+				// if (this.client.equals(this.discussion.getOwner())) {
+				List<ClientDisplayerInterface> clients = this.discussion
+						.getClients();
+				for (ClientDisplayerInterface cdi : clients) {
+					if (this.client == null
+							|| !this.client.getClient().equals(cdi.getClient())) {
+						System.out.println("Client: " + cdi.getClient() + " - "
+								+ this.client.getClient());
+						cdi.getMessage(msg, this.discussion);
 					}
 				}
+				// }
 			} else {
 				added = this.client.getServer().addMessage(this.client,
 						this.discussion, msg);
@@ -540,12 +543,13 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 	}
 
 	private boolean isRemote() {
-		try {
-			return this.discussion.getUrl() != null;
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			return false;
-		}
+//		try {
+//			return this.discussion.getUrl() != null;
+//		} catch (RemoteException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+		return true;
 	}
 
 	@Override
