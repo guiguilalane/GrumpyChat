@@ -46,6 +46,7 @@ public class DiscussionRemoteSubject extends UnicastRemoteObject implements
 		this.url = url;
 	}
 	
+	@Override
 	public String getUrl() throws RemoteException {
 		return url;
 	}

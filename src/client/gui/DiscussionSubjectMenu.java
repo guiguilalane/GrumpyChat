@@ -9,7 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.net.MalformedURLException;
 import java.rmi.ConnectException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import javax.swing.JButton;
@@ -132,19 +135,46 @@ public class DiscussionSubjectMenu extends JPanel implements ActionListener,
 			public void actionPerformed(ActionEvent event) {
 				boolean error = false;
 				try {
-					boolean connected = subject.isConnected(client);
-					if (connected
-							|| client.getServer().subscribe(subject, client)) {
-						if (client.isOpenedDiscussion(subject)) {
-							client.getDiscussionFrame(subject).setVisible(true);
-						} else {
-							client.openDiscussion(new ClientDiscussionFrame(
-									client, subject));
+					String url=subject.getUrl();
+					DiscussionSubjectInterface dsi=subject;
+					if(url!=null) {
+						try {
+							dsi = (DiscussionSubjectInterface) Naming.lookup("//"+url+"/"+subject.getTitle());
+						} catch (MalformedURLException e) {
+							e.printStackTrace();
+						} catch (NotBoundException e) {
+							e.printStackTrace();
 						}
-					} else {
-						client.error(
-								"You did not success to subscribe to the cannel",
-								true);
+						boolean connected = dsi.isConnected(client);
+						if (connected
+								|| dsi.subscribe(client)) {
+							if (client.isOpenedDiscussion(dsi)) {
+								client.getDiscussionFrame(dsi).setVisible(true);
+							} else {
+								client.openDiscussion(new ClientDiscussionFrame(
+										client, dsi));
+							}
+						} else {
+							client.error(
+									"You did not success to subscribe to the cannel",
+									true);
+						}
+					}
+					else {
+						boolean connected = dsi.isConnected(client);
+						if (connected
+								|| client.getServer().subscribe(dsi, client)) {
+							if (client.isOpenedDiscussion(dsi)) {
+								client.getDiscussionFrame(dsi).setVisible(true);
+							} else {
+								client.openDiscussion(new ClientDiscussionFrame(
+										client, dsi));
+							}
+						} else {
+							client.error(
+									"You did not success to subscribe to the cannel",
+									true);
+						}
 					}
 				} catch (ConnectException ce) {
 					error = true;

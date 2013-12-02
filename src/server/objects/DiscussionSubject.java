@@ -60,6 +60,11 @@ public class DiscussionSubject extends UnicastRemoteObject implements
 		this.title = title;
 		this.owner = owner;
 	}
+	
+	@Override
+	public String getUrl() throws RemoteException {
+		return null;
+	}
 
 	@Override
 	public String getTitle() throws RemoteException {

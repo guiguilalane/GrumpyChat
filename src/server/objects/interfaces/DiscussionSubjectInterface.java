@@ -144,4 +144,12 @@ public interface DiscussionSubjectInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public void diffuse(MessageInterface message) throws RemoteException;
+
+	/**
+	 * Returns the URL of diffusion
+	 * @return {@link String} - The diffusion URL if Remote URL if its remote, <code>null</code>
+	 * if it is not
+	 * @throws RemoteException
+	 */
+	String getUrl() throws RemoteException;
 }
