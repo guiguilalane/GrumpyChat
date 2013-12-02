@@ -2,7 +2,6 @@ package client.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GraphicsDevice;
@@ -26,6 +25,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -37,6 +37,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import server.objects.NotEditableTextPane;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import client.implementation.ClientDisplayer;
 
@@ -69,7 +70,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 	/**
 	 * The globale log console
 	 */
-	private JTextPane console = new JTextPane();
+	private JTextPane console = new NotEditableTextPane();
 	/**
 	 * For the globale log console styles
 	 */
@@ -94,6 +95,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 				this.console.getForeground());
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice();
+		this.setIconImage(new ImageIcon("img/server_icon.png").getImage());
 
 		// Set a minimum size to the app
 		int width = gd.getDisplayMode().getWidth();
@@ -129,9 +131,6 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 			}
 		});
 
-		this.console.setEditable(false);
-		this.console.setAutoscrolls(true);
-		this.console.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		JScrollPane consoleScroll = new JScrollPane(this.console);
 
 		JPanel buttonPanel = new JPanel();
@@ -328,7 +327,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 					ip="localhost";
 					e1.printStackTrace();
 				}
-				ip="192.168.1.55";
+//				ip="192.168.1.55";
 				DiscussionSubjectInterface dsi = this.cd.getServer().create(
 						this.cd, subject, ip + ":" + ClientMainFrame.currentPort);
 				if (dsi != null) {
