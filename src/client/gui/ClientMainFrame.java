@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -49,6 +50,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 	 * ID
 	 */
 	private static final long serialVersionUID = -8604291092461331957L;
+	private static int currentPort = 1101;
 	/**
 	 * The frame width
 	 */
@@ -317,14 +319,15 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 						subject = "";
 					}
 				} while (subject.isEmpty());
-				String ip="192.168.1.66";
+				String ip="192.168.1.55";
 				DiscussionSubjectInterface dsi = this.cd.getServer().create(
 						this.cd, subject, ip);
 				if (dsi != null) {
 					this.updateSubjectPanel(this.cd.getServer()
 							.getDiscussions());
-					String url = "//localhost:"
-							+"29760/"+subject.toLowerCase();
+					LocateRegistry.createRegistry(ClientMainFrame.currentPort);
+					String url = "//" + ip + ":" + ClientMainFrame.currentPort
+							+"/"+subject.toLowerCase();
 					System.out.println("[ Registry of discussion with URL  ] : " + url);
 					boolean diffused=false;
 					try {
@@ -344,6 +347,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 							+ "' has been correctly " + "created", true);
 					this.cd.openDiscussion(new ClientDiscussionFrame(this.cd,
 							dsi));
+					ClientMainFrame.currentPort++;
 				} else {
 					this.cd.error("The channel '" + subject
 							+ "' can not be created", true);
