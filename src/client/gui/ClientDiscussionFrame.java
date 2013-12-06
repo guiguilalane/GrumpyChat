@@ -2,7 +2,6 @@ package client.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -68,7 +68,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 
 	private JLabel label = new JLabel("Infos");
 	private JLabel ownerInfos = new JLabel("Owner");
-	private JTextPane log = new JTextPane();
+	private JTextPane log = new NotEditableTextPane();
 	private StyledDocument style = this.log.getStyledDocument();
 	private JScrollPane logScroll;
 	private JScrollPane messageScroll;
@@ -112,6 +112,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		}
 
 		this.setTitle("Discussion: " + title);
+		this.setIconImage(new ImageIcon("img/server_icon.png").getImage());
 
 		StyleConstants.setForeground(this.errorStyle, Color.red);
 		StyleConstants.setForeground(this.infoStyle, Color.decode("#808080"));
@@ -170,9 +171,6 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			System.err.println("Can not add the remove button");
 		}
 
-		this.log.setEditable(false);
-		this.log.setAutoscrolls(true);
-		this.log.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		this.logScroll = new JScrollPane(this.log);
 		this.logScroll.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
