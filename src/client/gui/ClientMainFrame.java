@@ -26,6 +26,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -94,6 +95,7 @@ public class ClientMainFrame extends JFrame implements ActionListener,
 				this.console.getForeground());
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice();
+		this.setIconImage(new ImageIcon("img/server_icon.png").getImage());
 
 		// Set a minimum size to the app
 		int width = gd.getDisplayMode().getWidth();
