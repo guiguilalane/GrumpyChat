@@ -2,7 +2,6 @@ package client.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;
@@ -37,6 +36,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import server.objects.Message;
+import server.objects.NotEditableTextPane;
 import server.objects.interfaces.DiscussionSubjectInterface;
 import server.objects.interfaces.MessageInterface;
 import server.objects.interfaces.ServerForumInterface;
@@ -68,7 +68,7 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 
 	private JLabel label = new JLabel("Infos");
 	private JLabel ownerInfos = new JLabel("Owner");
-	private JTextPane log = new JTextPane();
+	private JTextPane log = new NotEditableTextPane();
 	private StyledDocument style = this.log.getStyledDocument();
 	private JScrollPane logScroll;
 	private JScrollPane messageScroll;
@@ -170,9 +170,6 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			System.err.println("Can not add the remove button");
 		}
 
-		this.log.setEditable(false);
-		this.log.setAutoscrolls(true);
-		this.log.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		this.logScroll = new JScrollPane(this.log);
 		this.logScroll.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
@@ -452,17 +449,13 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 				List<ClientDisplayerInterface> clients = this.discussion
 						.getClients();
 				for (ClientDisplayerInterface cdi : clients) {
-					if (this.client == null
-							|| !this.client.getClient().equals(cdi.getClient())) {
-						cdi.getMessage(msg, this.discussion);
-					}
+					cdi.getMessage(msg, this.discussion);
 				}
 			} else {
 				added = this.client.getServer().addMessage(this.client,
 						this.discussion, msg);
 			}
 			if (added) {
-				this.client.getMessage(msg, this.discussion);
 				this.messageContent.setText("");
 			}
 		} catch (RemoteException e) {
