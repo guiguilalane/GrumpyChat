@@ -364,8 +364,10 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 			boolean server = message.getClient().equals(
 					ServerForumInterface.CLIENT);
 			StyleConstants.setItalic(this.infoStyle, false);
-			this.style.insertString(this.style.getLength(),
-					message.getDateString(), this.infoStyle);
+			synchronized (this.style) {
+				this.style.insertString(this.style.getLength(),
+						message.getDateString(), this.infoStyle);
+			}
 			StyleConstants.setItalic(this.infoStyle, true);
 			Style s = this.myName;
 			if (server) {
@@ -380,15 +382,21 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 					}
 				}
 			}
-			this.style.insertString(this.style.getLength(), me ? "Me" : message
-					.getClient().getPseudo(), s);
+			synchronized (this.style) {
+				this.style.insertString(this.style.getLength(), me ? "Me" : message
+						.getClient().getPseudo(), s);
+			}
 			if (!server) {
-				this.style.insertString(this.style.getLength(),
-						": " + message.getMessage() + "\n", this.normalStyle);
+				synchronized (this.style) {
+					this.style.insertString(this.style.getLength(),
+							": " + message.getMessage() + "\n", this.normalStyle);
+				}
 			} else {
 				StyleConstants.setItalic(this.infoStyle, false);
-				this.style.insertString(this.style.getLength(),
-						": " + message.getMessage() + "\n", this.infoStyle);
+				synchronized (this.style) {
+					this.style.insertString(this.style.getLength(),
+							": " + message.getMessage() + "\n", this.infoStyle);
+				}
 				StyleConstants.setItalic(this.infoStyle, true);
 			}
 		} catch (BadLocationException e) {
@@ -396,17 +404,23 @@ public class ClientDiscussionFrame extends JFrame implements ActionListener,
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		this.log.setCaretPosition(this.style.getLength());
+		synchronized (this.style) {
+			this.log.setCaretPosition(this.style.getLength());
+		}
 	}
 
 	public synchronized void write(String message, Style style) {
 		try {
-			this.style.insertString(this.style.getLength(), message + "\n",
-					style);
+			synchronized (this.style) {
+				this.style.insertString(this.style.getLength(), message + "\n",
+						style);
+			}
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		this.log.setCaretPosition(this.style.getLength());
+		synchronized (this.style) {
+			this.log.setCaretPosition(this.style.getLength());
+		}
 	}
 
 	public void setInactive() {
